@@ -1,8 +1,18 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, DateTime, Date, ForeignKey, JSON, Integer
+from sqlalchemy import (
+    Column,
+    String,
+    Boolean,
+    DateTime,
+    Date,
+    ForeignKey,
+    JSON,
+    Integer,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from app.database import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -20,18 +30,26 @@ class User(Base):
     city = Column(String(100), nullable=True)
     age = Column(String(5), nullable=True)
     pan_card = Column(String(10), nullable=True, index=True)
-    
+
     # Store settings & UI configurations like WhatsApp toggles, booking updates directly.
     preferences = Column(JSON, default=lambda: {})
     addresses = Column(JSON, default=lambda: [])
-    
+
     # Context IDs
     lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"), nullable=True)
-    technician_id = Column(UUID(as_uuid=True), ForeignKey("technicians.id"), nullable=True)
-    
+    technician_id = Column(
+        UUID(as_uuid=True), ForeignKey("technicians.id"), nullable=True
+    )
+
     # Financials
-    wallet_balance = Column(Integer, default=0, nullable=False) # Balance in paise
-    
+    wallet_balance = Column(Integer, default=0, nullable=False)  # Balance in paise
+
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )

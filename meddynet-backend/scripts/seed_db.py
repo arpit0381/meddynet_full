@@ -11,11 +11,12 @@ from app.models.lab import Lab, LabTest, SubscriptionPlan
 from app.models.technician import Technician, ShiftType, TechnicianStatus
 from app.services.auth_service import get_password_hash
 
+
 async def seed():
     url = settings.DATABASE_URL
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    
+
     engine = create_async_engine(url)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
@@ -35,7 +36,7 @@ async def seed():
                 name="Platform Admin",
                 email="admin@meddynet.com",
                 role="admin",
-                hashed_password=get_password_hash("admin123")
+                hashed_password=get_password_hash("admin123"),
             )
             session.add(admin)
 
@@ -51,14 +52,32 @@ async def seed():
                 lat=28.6139,
                 lng=77.2090,
                 is_verified=True,
-                plan=SubscriptionPlan.premium.value
+                plan=SubscriptionPlan.premium.value,
             )
             session.add(lab1)
 
             tests = [
-                {"name": "Complete Blood Count (CBC)", "price": 45000, "mrp": 60000, "category": "Hematology", "hours": 24},
-                {"name": "Lipid Profile", "price": 85000, "mrp": 120000, "category": "Biochemistry", "hours": 12},
-                {"name": "Thyroid Profile (T3, T4, TSH)", "price": 120000, "mrp": 180000, "category": "Hormones", "hours": 24},
+                {
+                    "name": "Complete Blood Count (CBC)",
+                    "price": 45000,
+                    "mrp": 60000,
+                    "category": "Hematology",
+                    "hours": 24,
+                },
+                {
+                    "name": "Lipid Profile",
+                    "price": 85000,
+                    "mrp": 120000,
+                    "category": "Biochemistry",
+                    "hours": 12,
+                },
+                {
+                    "name": "Thyroid Profile (T3, T4, TSH)",
+                    "price": 120000,
+                    "mrp": 180000,
+                    "category": "Hormones",
+                    "hours": 24,
+                },
             ]
             for t in tests:
                 test = LabTest(
@@ -68,11 +87,13 @@ async def seed():
                     mrp=t["mrp"],
                     category=t["category"],
                     turnaround_hours=t["hours"],
-                    is_active=True
+                    is_active=True,
                 )
                 session.add(test)
 
-            print("--- Seeding Technicians (using Manual SQL for Enum compatibility) ---")
+            print(
+                "--- Seeding Technicians (using Manual SQL for Enum compatibility) ---"
+            )
             tech_user_id = uuid.uuid4()
             tech_user = User(
                 id=tech_user_id,
@@ -80,29 +101,39 @@ async def seed():
                 name="Rahul Sharma",
                 email="rahul.tech@meddynet.com",
                 role="technician",
-                hashed_password=get_password_hash("tech123")
+                hashed_password=get_password_hash("tech123"),
             )
             session.add(tech_user)
-            
+
             # CRITICAL: Flush the session so the User exists in the DB before the raw SQL Technician insertion
             await session.flush()
-            
+
             tech_id = uuid.uuid4()
             # Raw SQL bypass for Technician Enums
-            await session.execute(sa.text("""
+            await session.execute(
+                sa.text("""
                 INSERT INTO technicians (id, lab_id, user_id, name, phone, shift, status, rating, is_active)
                 VALUES (:id, :lab_id, :user_id, :name, :phone, :shift, :status, :rating, :is_active)
-            """), {
-                "id": tech_id, "lab_id": lab1_id, "user_id": tech_user_id, 
-                "name": "Rahul Sharma", "phone": "+919999999999", 
-                "shift": "morning", "status": "off_duty", "rating": 4.9, "is_active": True
-            })
-            
+            """),
+                {
+                    "id": tech_id,
+                    "lab_id": lab1_id,
+                    "user_id": tech_user_id,
+                    "name": "Rahul Sharma",
+                    "phone": "+919999999999",
+                    "shift": "morning",
+                    "status": "off_duty",
+                    "rating": 4.9,
+                    "is_active": True,
+                },
+            )
+
             # Link back IDs
             tech_user.lab_id = lab1_id
             tech_user.technician_id = tech_id
 
         print("Done! Seeding completed successfully.")
+
 
 if __name__ == "__main__":
     asyncio.run(seed())

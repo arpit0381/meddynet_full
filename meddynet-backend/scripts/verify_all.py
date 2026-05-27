@@ -1,6 +1,7 @@
 """
 Full service verification - writes results to file for clean reading.
 """
+
 import asyncio
 from app.database import async_session
 from sqlalchemy import text
@@ -8,11 +9,13 @@ from app.services.mongo_service import mongo_service
 from app.services.auth_service import supabase_admin
 from app.redis import redis_client
 
+
 async def verify():
     results = []
+
     def log(msg=""):
         results.append(msg)
-        
+
     log("[SYSTEM] Deep Service Connection Verification")
     log("=" * 55)
 
@@ -29,7 +32,7 @@ async def verify():
     # 2. MongoDB Atlas
     log("\n[Phase 2] MongoDB Atlas Check...")
     try:
-        await mongo_service.client.admin.command('ping')
+        await mongo_service.client.admin.command("ping")
         count = await mongo_service.logs.count_documents({})
         log(f"  [OK] MONGODB: Healthy (Log Count: {count})")
     except Exception as e:
@@ -53,20 +56,21 @@ async def verify():
         log(f"  [FAIL] REDIS: {e}")
 
     log("\n" + "=" * 55)
-    
+
     # Count results
     ok_count = sum(1 for r in results if "[OK]" in r)
     fail_count = sum(1 for r in results if "[FAIL]" in r)
     log(f"SUMMARY: {ok_count}/4 services healthy, {fail_count}/4 failed")
-    
+
     # Write to file
     output = "\n".join(results)
     with open("scripts/verify_results.txt", "w", encoding="utf-8") as f:
         f.write(output)
-    
+
     # Also print (ASCII safe)
     for line in results:
         print(line)
+
 
 if __name__ == "__main__":
     asyncio.run(verify())

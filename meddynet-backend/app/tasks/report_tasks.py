@@ -14,12 +14,16 @@ from sqlalchemy.future import select
 
 logger = logging.getLogger(__name__)
 
-if settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY and settings.CLOUDINARY_API_SECRET:
+if (
+    settings.CLOUDINARY_CLOUD_NAME
+    and settings.CLOUDINARY_API_KEY
+    and settings.CLOUDINARY_API_SECRET
+):
     cloudinary.config(
         cloud_name=settings.CLOUDINARY_CLOUD_NAME,
         api_key=settings.CLOUDINARY_API_KEY,
         api_secret=settings.CLOUDINARY_API_SECRET,
-        secure=True
+        secure=True,
     )
 
 
@@ -42,7 +46,11 @@ def generate_pdf_bytes(booking_id: str, results: dict) -> bytes:
         c.drawString(2 * cm, height - 2 * cm, "MeddyNet Diagnostics")
         c.setFont("Helvetica", 10)
         c.drawString(2 * cm, height - 2.8 * cm, f"Lab Report — Booking #{booking_id}")
-        c.drawString(2 * cm, height - 3.4 * cm, f"Generated: {datetime.now(timezone.utc).strftime('%d %b %Y, %H:%M UTC')}")
+        c.drawString(
+            2 * cm,
+            height - 3.4 * cm,
+            f"Generated: {datetime.now(timezone.utc).strftime('%d %b %Y, %H:%M UTC')}",
+        )
 
         # Separator line
         c.setStrokeColorRGB(0.1, 0.6, 0.4)
@@ -58,7 +66,11 @@ def generate_pdf_bytes(booking_id: str, results: dict) -> bytes:
         patient = results.get("patient", {})
         c.drawString(2 * cm, y, f"Name: {patient.get('name', 'N/A')}")
         y -= 0.5 * cm
-        c.drawString(2 * cm, y, f"Age: {patient.get('age', 'N/A')} | Gender: {patient.get('gender', 'N/A')}")
+        c.drawString(
+            2 * cm,
+            y,
+            f"Age: {patient.get('age', 'N/A')} | Gender: {patient.get('gender', 'N/A')}",
+        )
 
         # Test results table
         y -= 1.2 * cm
@@ -89,8 +101,14 @@ def generate_pdf_bytes(booking_id: str, results: dict) -> bytes:
 
         # Footer
         c.setFont("Helvetica-Oblique", 8)
-        c.drawString(2 * cm, 1.5 * cm, "This is a computer-generated report. No signature required.")
-        c.drawString(2 * cm, 1 * cm, "MeddyNet Health Technologies Pvt. Ltd. — www.meddynet.com")
+        c.drawString(
+            2 * cm,
+            1.5 * cm,
+            "This is a computer-generated report. No signature required.",
+        )
+        c.drawString(
+            2 * cm, 1 * cm, "MeddyNet Health Technologies Pvt. Ltd. — www.meddynet.com"
+        )
 
         c.save()
         return buffer.getvalue()
@@ -101,7 +119,7 @@ def generate_pdf_bytes(booking_id: str, results: dict) -> bytes:
         content = f"MeddyNet Report - Booking {booking_id}\nGenerated: {datetime.now(timezone.utc).isoformat()}\n"
         for param in results.get("parameters", []):
             content += f"\n{param.get('name', '')}: {param.get('value', '')} {param.get('unit', '')}"
-        
+
         # Minimal valid PDF structure
         pdf = (
             b"%PDF-1.4\n"
@@ -117,27 +135,28 @@ def generate_pdf_bytes(booking_id: str, results: dict) -> bytes:
 
 async def async_generate_and_upload(booking_id: str, results: dict):
     logger.info(f"Generating PDF for booking {booking_id}...")
-    
+
     # Generate real PDF
     pdf_bytes = generate_pdf_bytes(booking_id, results)
-    
+
     url = f"https://res.cloudinary.com/demo/raw/upload/v1/report_{uuid.uuid4().hex[:8]}.pdf"
-    
+
     if settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY:
         try:
             upload_result = cloudinary.uploader.upload(
                 pdf_bytes,
                 folder="meddynet/reports",
                 resource_type="raw",
-                public_id=f"report_{booking_id}_{uuid.uuid4().hex[:6]}"
+                public_id=f"report_{booking_id}_{uuid.uuid4().hex[:6]}",
             )
             url = upload_result.get("secure_url", url)
         except Exception as e:
             logger.error(f"Cloudinary Report Upload Error: {e}")
-    
+
     # Update booking record with report URL
     try:
         from app.models.booking import Booking
+
         async with SessionLocal() as db:
             res = await db.execute(select(Booking).filter(Booking.id == booking_id))
             booking = res.scalar_one_or_none()
@@ -145,31 +164,33 @@ async def async_generate_and_upload(booking_id: str, results: dict):
                 booking.report_url = url
                 booking.status = "completed"
                 await db.commit()
-                
+
                 # Send notification to patient
                 if booking.patient_phone:
                     await notification_service.send_whatsapp_report(
-                        phone=booking.patient_phone,
-                        booking_id=booking_id,
-                        link=url
+                        phone=booking.patient_phone, booking_id=booking_id, link=url
                     )
     except Exception as e:
         logger.error(f"Failed to update booking {booking_id} with report URL: {e}")
-            
+
     # Analytics
-    await analytics_service.log_report_generation(booking_id, lab_id="backend_task_lab_id", report_url=url)
+    await analytics_service.log_report_generation(
+        booking_id, lab_id="backend_task_lab_id", report_url=url
+    )
     await analytics_service.log_event(
         level="info",
         event="report_delivery_dispatched",
         message=f"Dispatched report {url} for booking {booking_id}",
-        context={"booking_id": booking_id, "url": url}
+        context={"booking_id": booking_id, "url": url},
     )
-    
+
     return url
 
 
 @celery_app.task
 def generate_pdf_report(booking_id: str, results: dict):
-    logger.info(f"Starting async background task to create and upload report for {booking_id}")
+    logger.info(
+        f"Starting async background task to create and upload report for {booking_id}"
+    )
     url = asyncio.run(async_generate_and_upload(booking_id, results))
     return {"status": "success", "report_url": url}

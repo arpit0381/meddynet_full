@@ -1,6 +1,7 @@
 """
 Deep SSL diagnostic - writes results to a file for clean reading.
 """
+
 import ssl
 import socket
 import certifi
@@ -13,14 +14,18 @@ uri = os.getenv("MONGODB_URL")
 
 # Extract the first host from the URI
 import re
-hosts = re.findall(r'(ac-pzspd9o-shard-\d+-\d+\.6lzhtrl\.mongodb\.net)', uri)
+
+hosts = re.findall(r"(ac-pzspd9o-shard-\d+-\d+\.6lzhtrl\.mongodb\.net)", uri)
 host = hosts[0] if hosts else None
 port = 27017
 
 results = []
+
+
 def log(msg=""):
     results.append(msg)
     print(msg)
+
 
 log(f"Python: {sys.version}")
 log(f"OpenSSL: {ssl.OPENSSL_VERSION}")
@@ -89,7 +94,8 @@ log("=" * 60)
 log("[Test 5] Public IP (must be whitelisted in Atlas)")
 try:
     import urllib.request
-    ip = urllib.request.urlopen('https://api.ipify.org', timeout=5).read().decode()
+
+    ip = urllib.request.urlopen("https://api.ipify.org", timeout=5).read().decode()
     log(f"  Your IP: {ip}")
 except Exception as e:
     log(f"  Could not determine IP: {e}")

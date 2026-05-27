@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from app.database import Base
 
+
 class Review(Base):
     __tablename__ = "reviews"
 
@@ -12,8 +13,10 @@ class Review(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"))
     booking_id = Column(UUID(as_uuid=True), ForeignKey("bookings.id"))
-    
+
     rating = Column(Float, nullable=False)
     comment = Column(Text, nullable=True)
-    
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )

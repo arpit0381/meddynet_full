@@ -4,16 +4,20 @@ from typing import Optional
 from pydantic import BaseModel
 from app.models.payment import PaymentStatus
 
+
 class PaymentCreate(BaseModel):
     booking_id: uuid.UUID
 
+
 class DepositCreate(BaseModel):
-    amount: int # Amount in paisa
+    amount: int  # Amount in paisa
+
 
 class PaymentVerify(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+
 
 class PaymentResponse(BaseModel):
     id: uuid.UUID

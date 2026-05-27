@@ -4,9 +4,11 @@ from typing import Optional, List
 from pydantic import BaseModel
 from app.models.booking import BookingType, BookingStatus
 
+
 class BookingTestCreate(BaseModel):
     lab_test_id: uuid.UUID
     price_at_booking: int
+
 
 class BookingTestResponse(BaseModel):
     id: uuid.UUID
@@ -15,6 +17,7 @@ class BookingTestResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class BookingBase(BaseModel):
     lab_id: uuid.UUID
@@ -30,8 +33,10 @@ class BookingBase(BaseModel):
     promo_code: Optional[str] = None
     notes: Optional[str] = None
 
+
 class BookingCreate(BookingBase):
     test_ids: List[uuid.UUID]
+
 
 class LabQuickScheduleRequest(BaseModel):
     patient_name: str
@@ -40,6 +45,7 @@ class LabQuickScheduleRequest(BaseModel):
     scheduled_at: datetime
     test_ids: List[uuid.UUID] = []
     notes: Optional[str] = None
+
 
 class BookingResponse(BookingBase):
     id: uuid.UUID
@@ -52,7 +58,7 @@ class BookingResponse(BookingBase):
     cancel_reason: Optional[str] = None
     created_at: datetime
     tests: List[BookingTestResponse] = []
-    
+
     # Razorpay Transient Fields
     razorpay_order_id: Optional[str] = None
     amount: Optional[int] = None

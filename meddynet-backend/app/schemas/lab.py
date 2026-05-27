@@ -3,6 +3,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from app.models.lab import SubscriptionPlan
 
+
 class LabTestBase(BaseModel):
     name: str
     category: str
@@ -12,8 +13,10 @@ class LabTestBase(BaseModel):
     home_collection: bool = False
     is_active: bool = True
 
+
 class LabTestCreate(LabTestBase):
     lab_id: uuid.UUID
+
 
 class LabTestResponse(LabTestBase):
     id: uuid.UUID
@@ -21,6 +24,7 @@ class LabTestResponse(LabTestBase):
 
     class Config:
         from_attributes = True
+
 
 class LabBase(BaseModel):
     name: str
@@ -34,8 +38,10 @@ class LabBase(BaseModel):
     is_iso: bool = False
     home_collection: bool = False
 
+
 class LabCreate(LabBase):
     pass
+
 
 class LabResponse(LabBase):
     id: uuid.UUID

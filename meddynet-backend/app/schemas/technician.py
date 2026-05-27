@@ -3,14 +3,17 @@ from typing import Optional
 from pydantic import BaseModel
 from app.models.technician import ShiftType, TechnicianStatus
 
+
 class TechnicianBase(BaseModel):
     name: str
     phone: str
     vehicle: Optional[str] = None
     shift: ShiftType
 
+
 class TechnicianCreate(TechnicianBase):
     pass
+
 
 class TechnicianResponse(TechnicianBase):
     id: uuid.UUID
@@ -25,9 +28,11 @@ class TechnicianResponse(TechnicianBase):
     class Config:
         from_attributes = True
 
+
 class LocationUpdate(BaseModel):
     lat: float
     lng: float
+
 
 class TrackingResponse(BaseModel):
     tech_id: uuid.UUID

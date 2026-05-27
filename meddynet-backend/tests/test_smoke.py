@@ -2,6 +2,7 @@
 Smoke Tests — Basic endpoint availability checks.
 These tests verify the API responds without crashing on core routes.
 """
+
 import pytest
 
 

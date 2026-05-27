@@ -11,11 +11,12 @@ import uuid
 
 logger = logging.getLogger(__name__)
 
+
 async def async_process_payouts():
     async with SessionLocal() as db:
         res = await db.execute(select(LabWallet).filter(LabWallet.pending_balance > 0))
         wallets = res.scalars().all()
-        
+
         count = 0
         for wallet in wallets:
             try:
@@ -24,23 +25,27 @@ async def async_process_payouts():
                 payout_amount = wallet.pending_balance
                 # Call RazorpayX
                 response = await payment_service.process_payout(
-                    fund_account_id=f"fa_{wallet.lab_id}", 
-                    amount_paise=payout_amount
+                    fund_account_id=f"fa_{wallet.lab_id}", amount_paise=payout_amount
                 )
-                
+
                 payout_id = response.get("id", f"pout_{uuid.uuid4().hex[:8]}")
-                
+
                 # Update Wallet Ledger & Deduct
-                await deduct_lab_wallet_for_payout(wallet.lab_id, payout_amount, payout_id, db)
-                
+                await deduct_lab_wallet_for_payout(
+                    wallet.lab_id, payout_amount, payout_id, db
+                )
+
                 # Log Analytics
-                await analytics_service.log_payout_success(str(wallet.lab_id), payout_amount, payout_id)
+                await analytics_service.log_payout_success(
+                    str(wallet.lab_id), payout_amount, payout_id
+                )
                 count += 1
             except Exception as e:
                 logger.error(f"Payout failed for Lab {wallet.lab_id}: {e}")
-        
+
         await db.commit()
         return count
+
 
 @celery_app.task
 def process_daily_payouts():

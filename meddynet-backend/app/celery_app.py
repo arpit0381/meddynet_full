@@ -6,7 +6,11 @@ celery_app = Celery(
     "meddynet",
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
-    include=["app.tasks.payout_tasks", "app.tasks.notification_tasks", "app.tasks.report_tasks"]
+    include=[
+        "app.tasks.payout_tasks",
+        "app.tasks.notification_tasks",
+        "app.tasks.report_tasks",
+    ],
 )
 
 celery_app.conf.update(
@@ -21,6 +25,6 @@ celery_app.conf.update(
 celery_app.conf.beat_schedule = {
     "process-daily-payouts": {
         "task": "app.tasks.payout_tasks.process_daily_payouts",
-        "schedule": 86400.0, # Every 24 hours (usually configured via crontab for exact midnight)
+        "schedule": 86400.0,  # Every 24 hours (usually configured via crontab for exact midnight)
     },
 }

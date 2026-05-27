@@ -3,8 +3,10 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 
+
 class ReportUpload(BaseModel):
     booking_id: uuid.UUID
+
 
 class ReportResponse(BaseModel):
     id: uuid.UUID

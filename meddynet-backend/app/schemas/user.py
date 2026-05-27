@@ -3,6 +3,7 @@ from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr, model_validator
 
+
 class UserBase(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -16,9 +17,11 @@ class UserBase(BaseModel):
     preferences: Optional[dict] = None
     addresses: Optional[list] = None
 
+
 class UserCreate(UserBase):
     name: str
     phone: str
+
 
 class UserResponse(BaseModel):
     id: uuid.UUID
@@ -41,12 +44,16 @@ class UserResponse(BaseModel):
     lab_id: Optional[uuid.UUID] = None
     technician_id: Optional[uuid.UUID] = None
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def compute_age_from_dob(self):
         """Dynamically calculate age from date of birth."""
         if self.dob:
             today = date.today()
-            age = today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
+            age = (
+                today.year
+                - self.dob.year
+                - ((today.month, today.day) < (self.dob.month, self.dob.day))
+            )
             self.age = str(age)
         return self
 

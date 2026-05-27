@@ -6,6 +6,7 @@ from app.services.mongo_service import mongo_service
 from app.services.auth_service import supabase_admin
 from app.redis import redis_client
 
+
 async def verify_everything_direct():
     print(f"\n[SYSTEM] Deep Service Connection Verification (Direct Import)")
     print(f"--------------------------------------------------")
@@ -24,11 +25,13 @@ async def verify_everything_direct():
     print(f"\n[Phase 2] MongoDB Atlas Check...")
     try:
         # Ping command to verify SSL/TLS Handshake
-        await mongo_service.client.admin.command('ping')
+        await mongo_service.client.admin.command("ping")
         count = await mongo_service.logs.count_documents({})
         print(f"✅ MONGODB: Healthy (Log Count: {count})")
     except Exception as e:
-        print(f"❌ MONGODB: Failed! (SSL handshakes typically fail here on Windows if certifi is missing) {e}")
+        print(
+            f"❌ MONGODB: Failed! (SSL handshakes typically fail here on Windows if certifi is missing) {e}"
+        )
 
     # 3. Supabase Storage
     print(f"\n[Phase 3] Supabase Storage Check...")
@@ -50,6 +53,7 @@ async def verify_everything_direct():
 
     print(f"\n--------------------------------------------------")
     print(f"SUMMARY: If all results are green, MeddyNet is Operational.")
+
 
 if __name__ == "__main__":
     asyncio.run(verify_everything_direct())

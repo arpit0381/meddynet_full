@@ -12,6 +12,7 @@ import time
 router = APIRouter(prefix="/diagnostics", tags=["System Diagnostics"])
 logger = logging.getLogger(__name__)
 
+
 @router.get("/")
 async def run_diagnostics(db: AsyncSession = Depends(get_db)):
     """
@@ -21,7 +22,7 @@ async def run_diagnostics(db: AsyncSession = Depends(get_db)):
     results = {
         "timestamp": time.time(),
         "environment": settings.ENVIRONMENT,
-        "services": {}
+        "services": {},
     }
 
     # 1. NeonDB (PostgreSQL)
@@ -33,7 +34,7 @@ async def run_diagnostics(db: AsyncSession = Depends(get_db)):
         results["services"]["postgresql"] = {
             "status": "healthy",
             "latency_ms": round((time.time() - start) * 1000, 2),
-            "details": {"user": user, "version": version.split(",")[0]}
+            "details": {"user": user, "version": version.split(",")[0]},
         }
     except Exception as e:
         results["services"]["postgresql"] = {"status": "unhealthy", "error": str(e)}
@@ -42,12 +43,12 @@ async def run_diagnostics(db: AsyncSession = Depends(get_db)):
     try:
         start = time.time()
         # Ping the server to check connectivity and SSL handshake
-        await mongo_service.client.admin.command('ping')
+        await mongo_service.client.admin.command("ping")
         log_count = await mongo_service.logs.count_documents({})
         results["services"]["mongodb"] = {
             "status": "healthy",
             "latency_ms": round((time.time() - start) * 1000, 2),
-            "details": {"log_count": log_count}
+            "details": {"log_count": log_count},
         }
     except Exception as e:
         results["services"]["mongodb"] = {"status": "unhealthy", "error": str(e)}
@@ -61,10 +62,13 @@ async def run_diagnostics(db: AsyncSession = Depends(get_db)):
         results["services"]["supabase_storage"] = {
             "status": "healthy",
             "latency_ms": round((time.time() - start) * 1000, 2),
-            "details": {"buckets": bucket_names}
+            "details": {"buckets": bucket_names},
         }
     except Exception as e:
-        results["services"]["supabase_storage"] = {"status": "unhealthy", "error": str(e)}
+        results["services"]["supabase_storage"] = {
+            "status": "unhealthy",
+            "error": str(e),
+        }
 
     # 4. Redis (Upstash/Local)
     try:
@@ -72,7 +76,7 @@ async def run_diagnostics(db: AsyncSession = Depends(get_db)):
         await redis_client.ping()
         results["services"]["redis"] = {
             "status": "healthy",
-            "latency_ms": round((time.time() - start) * 1000, 2)
+            "latency_ms": round((time.time() - start) * 1000, 2),
         }
     except Exception as e:
         results["services"]["redis"] = {"status": "unhealthy", "error": str(e)}
