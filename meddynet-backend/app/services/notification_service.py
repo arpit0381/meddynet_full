@@ -66,9 +66,7 @@ class AuthkeyProvider(NotificationProvider):
     async def send_otp(self, phone: str, otp: str) -> bool:
         # PII Masking Standard for Compliance (10000% Secure)
         masked_phone = f"{phone[:5]}****"
-        logger.info(
-            f"Dispatching OTP pulse to {masked_phone} (Security Context: Shielded)"
-        )
+        logger.info(f"Dispatching OTP pulse to {masked_phone} (Security Context: Shielded)")
         msg = f"Your MeddyNet verification code is {otp}. Valid for 5 minutes."
         return await self.send_sms(phone, msg)
 
@@ -115,9 +113,7 @@ class NotificationService:
         return res
 
     async def send_report_link(self, phone: str, booking_id: str, link: str):
-        msg = (
-            f"Your MeddyNet diagnostic report for booking {booking_id} is ready: {link}"
-        )
+        msg = f"Your MeddyNet diagnostic report for booking {booking_id} is ready: {link}"
         res = await self.provider.send_sms(phone, msg)
 
         await mongo_service.log_event(
@@ -174,9 +170,7 @@ class NotificationService:
             msg = f"✅ MeddyNet Booking {booking_id[:8]} confirmed at {lab_name} on {date} at {time}."
             return await self.provider.send_sms(phone, msg)
 
-    async def send_whatsapp_reminder(
-        self, phone: str, booking_id: str, time_remaining: str
-    ):
+    async def send_whatsapp_reminder(self, phone: str, booking_id: str, time_remaining: str):
         """
         Send appointment reminder via WhatsApp.
         Falls back to SMS if WhatsApp is not configured.
@@ -298,14 +292,10 @@ whatsapp_phone_id = getattr(settings, "WHATSAPP_PHONE_NUMBER_ID", None)
 whatsapp_token = getattr(settings, "WHATSAPP_ACCESS_TOKEN", None)
 
 if whatsapp_phone_id and whatsapp_token:
-    active_provider = WhatsAppBusinessProvider(
-        phone_number_id=whatsapp_phone_id, access_token=whatsapp_token
-    )
+    active_provider = WhatsAppBusinessProvider(phone_number_id=whatsapp_phone_id, access_token=whatsapp_token)
     logger.info("NotificationService: Initialized with WhatsAppBusinessProvider")
 elif settings.AUTHKEY_API_KEY:
-    active_provider = AuthkeyProvider(
-        api_key=settings.AUTHKEY_API_KEY, sender=settings.AUTHKEY_SENDER_ID
-    )
+    active_provider = AuthkeyProvider(api_key=settings.AUTHKEY_API_KEY, sender=settings.AUTHKEY_SENDER_ID)
     logger.info("NotificationService: Initialized with AuthkeyProvider")
 else:
     active_provider = MockNotificationProvider()

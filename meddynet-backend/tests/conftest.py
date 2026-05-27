@@ -43,9 +43,7 @@ def auth_headers():
     """Generate a test JWT auth header."""
     from app.services.auth_service import create_access_token
 
-    token = create_access_token(
-        {"sub": "test-user-uuid", "role": "patient", "phone": "+919999999999"}
-    )
+    token = create_access_token({"sub": "test-user-uuid", "role": "patient", "phone": "+919999999999"})
     return {"Authorization": f"Bearer {token}"}
 
 
@@ -54,7 +52,5 @@ def admin_headers():
     """Generate a test JWT auth header for admin."""
     from app.services.auth_service import create_access_token
 
-    token = create_access_token(
-        {"sub": "test-admin-uuid", "role": "admin", "phone": "+919999999998"}
-    )
+    token = create_access_token({"sub": "test-admin-uuid", "role": "admin", "phone": "+919999999998"})
     return {"Authorization": f"Bearer {token}"}

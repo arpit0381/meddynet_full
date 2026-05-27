@@ -27,9 +27,7 @@ async def get_tech_stats(
 ):
     tech_id = current_user.get("technician_id")
     if not tech_id:
-        tech_res = await db.execute(
-            select(Technician).filter(Technician.user_id == current_user["sub"])
-        )
+        tech_res = await db.execute(select(Technician).filter(Technician.user_id == current_user["sub"]))
         tech = tech_res.scalar_one_or_none()
         if not tech:
             raise HTTPException(status_code=404, detail="Technician profile not found")
@@ -46,9 +44,7 @@ async def get_tech_stats(
     total_earnings = completed_res.scalar() or 0
 
     # 2. Daily Earnings (today)
-    today_start = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     today_res = await db.execute(
         select(func.sum(Booking.total_amount)).filter(
             Booking.technician_id == tech_id,
@@ -59,9 +55,7 @@ async def get_tech_stats(
     today_earnings = today_res.scalar() or 0
 
     # 3. Success Rate
-    assigned_count_res = await db.execute(
-        select(func.count(Booking.id)).filter(Booking.technician_id == tech_id)
-    )
+    assigned_count_res = await db.execute(select(func.count(Booking.id)).filter(Booking.technician_id == tech_id))
     assigned_count = assigned_count_res.scalar() or 0
 
     completed_count_res = await db.execute(
@@ -71,9 +65,7 @@ async def get_tech_stats(
     )
     completed_count = completed_count_res.scalar() or 0
 
-    success_rate = (
-        100.0 if assigned_count == 0 else (completed_count / assigned_count) * 100
-    )
+    success_rate = 100.0 if assigned_count == 0 else (completed_count / assigned_count) * 100
 
     return {
         "today_earnings": float(today_earnings) / 100,
@@ -92,9 +84,7 @@ async def get_my_jobs(
     # Use technician_id from token if present, otherwise fetch from DB
     tech_id = current_user.get("technician_id")
     if not tech_id:
-        tech_res = await db.execute(
-            select(Technician).filter(Technician.user_id == current_user["sub"])
-        )
+        tech_res = await db.execute(select(Technician).filter(Technician.user_id == current_user["sub"]))
         tech = tech_res.scalar_one_or_none()
         if not tech:
             raise HTTPException(status_code=404, detail="Technician profile not found")
@@ -131,9 +121,7 @@ async def get_available_jobs(
     """
     query = (
         select(Booking)
-        .filter(
-            Booking.status == BookingStatus.confirmed, Booking.technician_id == None
-        )
+        .filter(Booking.status == BookingStatus.confirmed, Booking.technician_id == None)
         .order_by(Booking.scheduled_at.asc())
     )
 
@@ -149,9 +137,7 @@ async def self_assign_job(
 ):
     tech_id = current_user.get("technician_id")
     if not tech_id:
-        tech_res = await db.execute(
-            select(Technician).filter(Technician.user_id == current_user["sub"])
-        )
+        tech_res = await db.execute(select(Technician).filter(Technician.user_id == current_user["sub"]))
         tech = tech_res.scalar_one_or_none()
         if not tech:
             raise HTTPException(status_code=404, detail="Technician profile not found")
@@ -217,14 +203,10 @@ async def upload_diagnostic_report(
         raise HTTPException(status_code=404, detail="Booking not found")
 
     # 1. Upload to Cloudinary Storage
-    report_data = await upload_report_to_supabase(
-        file, str(booking.id), str(booking.user_id)
-    )
+    report_data = await upload_report_to_supabase(file, str(booking.id), str(booking.user_id))
 
     if not report_data:
-        raise HTTPException(
-            status_code=500, detail="Failed to upload report. Please try again."
-        )
+        raise HTTPException(status_code=500, detail="Failed to upload report. Please try again.")
 
     # 2. Update Booking with Report URL and mark as Report Ready
     booking.status = BookingStatus.report_ready
@@ -238,9 +220,7 @@ async def upload_diagnostic_report(
             type="report",
         )
     except Exception as e:
-        logger.warning(
-            f"Non-critical: Notification failed for booking {booking_id}: {e}"
-        )
+        logger.warning(f"Non-critical: Notification failed for booking {booking_id}: {e}")
 
     await db.commit()
     return {
@@ -259,9 +239,7 @@ async def update_my_location(
     # Fetch technician
     tech_id = current_user.get("technician_id")
     if not tech_id:
-        tech_res = await db.execute(
-            select(Technician).filter(Technician.user_id == current_user["sub"])
-        )
+        tech_res = await db.execute(select(Technician).filter(Technician.user_id == current_user["sub"]))
         tech = tech_res.scalar_one_or_none()
         if not tech:
             raise HTTPException(status_code=404, detail="Technician profile not found")

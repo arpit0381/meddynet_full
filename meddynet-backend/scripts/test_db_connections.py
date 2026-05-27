@@ -41,9 +41,7 @@ async def test_mongodb_atlas():
 async def test_supabase_auth():
     print("⚡ Testing Supabase Auth...")
     try:
-        supabase: Client = create_client(
-            settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY
-        )
+        supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_ANON_KEY)
         # Ping the API (usually doesn't need auth for basic ping)
         # We'll just verify the client exists and can handle a low-level fetch
         # But for Supabase, just correctly initializing the client with a valid URL is often check 1.

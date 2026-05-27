@@ -19,9 +19,7 @@ async def verify_diagnostics():
                 for service, info in data["services"].items():
                     status_marker = "✅" if info["status"] == "healthy" else "❌"
                     latency = info.get("latency_ms", "N/A")
-                    print(
-                        f"{status_marker} {service.upper()}: {info['status']} ({latency}ms)"
-                    )
+                    print(f"{status_marker} {service.upper()}: {info['status']} ({latency}ms)")
                     if info["status"] != "healthy":
                         print(f"   Error: {info['error']}")
             else:

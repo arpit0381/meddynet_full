@@ -51,9 +51,7 @@ async def razorpay_webhook(
         payment_id = payment_payload["id"]
 
         # Reconciliation logic
-        res = await db.execute(
-            select(Payment).filter(Payment.razorpay_order_id == order_id)
-        )
+        res = await db.execute(select(Payment).filter(Payment.razorpay_order_id == order_id))
         payment = res.scalar_one_or_none()
 
         if payment and payment.status != PaymentStatus.paid:
@@ -61,9 +59,7 @@ async def razorpay_webhook(
             payment.razorpay_payment_id = payment_id
 
             # Confirm Booking
-            b_res = await db.execute(
-                select(Booking).filter(Booking.id == payment.booking_id)
-            )
+            b_res = await db.execute(select(Booking).filter(Booking.id == payment.booking_id))
             booking = b_res.scalar_one_or_none()
             if booking:
                 booking.status = BookingStatus.confirmed
@@ -78,9 +74,7 @@ async def razorpay_webhook(
                 )
 
                 # Send Notification
-                await notification_service.send_booking_confirmation(
-                    booking.patient_phone, str(booking.id)
-                )
+                await notification_service.send_booking_confirmation(booking.patient_phone, str(booking.id))
 
                 # Log to MongoDB
                 await mongo_service.log_event(

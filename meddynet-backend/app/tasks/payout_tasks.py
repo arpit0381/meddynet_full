@@ -31,14 +31,10 @@ async def async_process_payouts():
                 payout_id = response.get("id", f"pout_{uuid.uuid4().hex[:8]}")
 
                 # Update Wallet Ledger & Deduct
-                await deduct_lab_wallet_for_payout(
-                    wallet.lab_id, payout_amount, payout_id, db
-                )
+                await deduct_lab_wallet_for_payout(wallet.lab_id, payout_amount, payout_id, db)
 
                 # Log Analytics
-                await analytics_service.log_payout_success(
-                    str(wallet.lab_id), payout_amount, payout_id
-                )
+                await analytics_service.log_payout_success(str(wallet.lab_id), payout_amount, payout_id)
                 count += 1
             except Exception as e:
                 logger.error(f"Payout failed for Lab {wallet.lab_id}: {e}")

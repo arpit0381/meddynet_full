@@ -9,9 +9,7 @@ logger = logging.getLogger(__name__)
 
 class PaymentProvider(abc.ABC):
     @abc.abstractmethod
-    async def create_order(
-        self, amount_paise: int, currency: str = "INR"
-    ) -> Dict[str, Any]:
+    async def create_order(self, amount_paise: int, currency: str = "INR") -> Dict[str, Any]:
         pass
 
     @abc.abstractmethod
@@ -19,28 +17,20 @@ class PaymentProvider(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def create_payout(
-        self, fund_account_id: str, amount_paise: int, currency: str = "INR"
-    ) -> Dict[str, Any]:
+    async def create_payout(self, fund_account_id: str, amount_paise: int, currency: str = "INR") -> Dict[str, Any]:
         pass
 
     @abc.abstractmethod
-    async def create_transfer(
-        self, account_id: str, amount_paise: int, payment_id: str
-    ) -> Dict[str, Any]:
+    async def create_transfer(self, account_id: str, amount_paise: int, payment_id: str) -> Dict[str, Any]:
         pass
 
     @abc.abstractmethod
-    async def create_refund(
-        self, payment_id: str, amount_paise: Optional[int] = None
-    ) -> Dict[str, Any]:
+    async def create_refund(self, payment_id: str, amount_paise: Optional[int] = None) -> Dict[str, Any]:
         pass
 
 
 class MockPaymentProvider(PaymentProvider):
-    async def create_order(
-        self, amount_paise: int, currency: str = "INR"
-    ) -> Dict[str, Any]:
+    async def create_order(self, amount_paise: int, currency: str = "INR") -> Dict[str, Any]:
         logger.info(f"[Mock Payment]: Created order for {amount_paise} {currency}")
         # Add random suffix to avoid IntegrityError (unique constraint) in DB
         random_suffix = uuid.uuid4().hex[:6]
@@ -53,31 +43,19 @@ class MockPaymentProvider(PaymentProvider):
         logger.info("[Mock Payment]: Signature verified")
         return True
 
-    async def create_payout(
-        self, fund_account_id: str, amount_paise: int, currency: str = "INR"
-    ) -> Dict[str, Any]:
-        logger.info(
-            f"[Mock Payout]: Sent {amount_paise} {currency} to {fund_account_id}"
-        )
+    async def create_payout(self, fund_account_id: str, amount_paise: int, currency: str = "INR") -> Dict[str, Any]:
+        logger.info(f"[Mock Payout]: Sent {amount_paise} {currency} to {fund_account_id}")
         return {"payout_id": f"payout_mock_{amount_paise}", "status": "processed"}
 
-    async def create_transfer(
-        self, account_id: str, amount_paise: int, payment_id: str
-    ) -> Dict[str, Any]:
-        logger.info(
-            f"[Mock Transfer]: Routed {amount_paise} for {payment_id} to {account_id}"
-        )
+    async def create_transfer(self, account_id: str, amount_paise: int, payment_id: str) -> Dict[str, Any]:
+        logger.info(f"[Mock Transfer]: Routed {amount_paise} for {payment_id} to {account_id}")
         return {
             "transfer_id": f"trf_mock_{uuid.uuid4().hex[:8]}",
             "status": "processed",
         }
 
-    async def create_refund(
-        self, payment_id: str, amount_paise: Optional[int] = None
-    ) -> Dict[str, Any]:
-        logger.info(
-            f"[Mock Refund]: Refunded {amount_paise or 'full'} for {payment_id}"
-        )
+    async def create_refund(self, payment_id: str, amount_paise: Optional[int] = None) -> Dict[str, Any]:
+        logger.info(f"[Mock Refund]: Refunded {amount_paise or 'full'} for {payment_id}")
         return {"refund_id": f"refund_mock_{payment_id}", "status": "processed"}
 
 
@@ -95,14 +73,10 @@ class RazorpayProvider(PaymentProvider):
 
             self.client = razorpay.Client(auth=(self.key_id, self.key_secret))
         except ImportError:
-            logger.error(
-                "Razorpay SDK not installed. Please run `pip install razorpay`."
-            )
+            logger.error("Razorpay SDK not installed. Please run `pip install razorpay`.")
             self.client = None
 
-    async def create_order(
-        self, amount_paise: int, currency: str = "INR"
-    ) -> Dict[str, Any]:
+    async def create_order(self, amount_paise: int, currency: str = "INR") -> Dict[str, Any]:
         if not self.client:
             return {"error": "Razorpay client not initialized"}
         params = {"amount": amount_paise, "currency": currency, "payment_capture": 1}
@@ -140,15 +114,11 @@ class RazorpayProvider(PaymentProvider):
             logger.error(f"Razorpay Signature Verification Failed: {str(e)}")
             return False
 
-    async def create_payout(
-        self, fund_account_id: str, amount_paise: int, currency: str = "INR"
-    ) -> Dict[str, Any]:
+    async def create_payout(self, fund_account_id: str, amount_paise: int, currency: str = "INR") -> Dict[str, Any]:
         if not self.client:
             return {"error": "Razorpay client not initialized"}
         if not settings.RAZORPAYX_ACCOUNT_NUMBER:
-            logger.warning(
-                "RAZORPAYX_ACCOUNT_NUMBER not configured. Payout will be simulated."
-            )
+            logger.warning("RAZORPAYX_ACCOUNT_NUMBER not configured. Payout will be simulated.")
             return {"status": "simulated", "payout_id": f"pout_{uuid.uuid4().hex[:8]}"}
 
         try:
@@ -168,9 +138,7 @@ class RazorpayProvider(PaymentProvider):
             logger.error(f"Razorpay Payout Error: {e}")
             return {"status": "failed", "error": str(e)}
 
-    async def create_transfer(
-        self, account_id: str, amount_paise: int, payment_id: str
-    ) -> Dict[str, Any]:
+    async def create_transfer(self, account_id: str, amount_paise: int, payment_id: str) -> Dict[str, Any]:
         if not self.client:
             return {"error": "Razorpay client not initialized"}
         try:
@@ -185,9 +153,7 @@ class RazorpayProvider(PaymentProvider):
             logger.error(f"Razorpay Route Transfer Error: {e}")
             return {"status": "failed", "error": str(e)}
 
-    async def create_refund(
-        self, payment_id: str, amount_paise: Optional[int] = None
-    ) -> Dict[str, Any]:
+    async def create_refund(self, payment_id: str, amount_paise: Optional[int] = None) -> Dict[str, Any]:
         if not self.client:
             return {"error": "Razorpay client not initialized"}
         try:
@@ -224,8 +190,6 @@ class PaymentService:
 # Initialization Loop: Automatic switch to Razorpay if keys are present
 active_provider = MockPaymentProvider()
 if settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET:
-    active_provider = RazorpayProvider(
-        settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET
-    )
+    active_provider = RazorpayProvider(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
 
 payment_service = PaymentService(active_provider)

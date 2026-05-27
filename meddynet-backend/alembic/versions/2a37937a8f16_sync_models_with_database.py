@@ -24,14 +24,10 @@ def upgrade() -> None:
     op.drop_table("support_tickets")
     op.add_column("bookings", sa.Column("lat", sa.Float(), nullable=True))
     op.add_column("bookings", sa.Column("lng", sa.Float(), nullable=True))
-    op.add_column(
-        "bookings", sa.Column("promo_code", sa.String(length=50), nullable=True)
-    )
+    op.add_column("bookings", sa.Column("promo_code", sa.String(length=50), nullable=True))
     op.add_column("bookings", sa.Column("discount_amount", sa.Integer(), nullable=True))
     op.add_column("bookings", sa.Column("notes", sa.Text(), nullable=True))
-    op.add_column(
-        "bookings", sa.Column("cancelled_at", sa.DateTime(timezone=True), nullable=True)
-    )
+    op.add_column("bookings", sa.Column("cancelled_at", sa.DateTime(timezone=True), nullable=True))
     op.add_column("bookings", sa.Column("cancel_reason", sa.Text(), nullable=True))
     op.drop_column("bookings", "status")
     op.drop_column("bookings", "type")
@@ -64,12 +60,8 @@ def upgrade() -> None:
         ),
     )
     op.add_column("lab_tests", sa.Column("mrp", sa.Integer(), nullable=False))
-    op.add_column(
-        "lab_tests", sa.Column("turnaround_hours", sa.Integer(), nullable=False)
-    )
-    op.add_column(
-        "lab_tests", sa.Column("home_collection", sa.Boolean(), nullable=True)
-    )
+    op.add_column("lab_tests", sa.Column("turnaround_hours", sa.Integer(), nullable=False))
+    op.add_column("lab_tests", sa.Column("home_collection", sa.Boolean(), nullable=True))
     op.alter_column(
         "lab_tests",
         "category",
@@ -111,12 +103,8 @@ def upgrade() -> None:
         type_=sa.String(length=100),
         existing_nullable=False,
     )
-    op.alter_column(
-        "labs", "lat", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=False
-    )
-    op.alter_column(
-        "labs", "lng", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=False
-    )
+    op.alter_column("labs", "lat", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=False)
+    op.alter_column("labs", "lng", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=False)
     op.drop_constraint("labs_license_number_key", "labs", type_="unique")
     op.create_index(op.f("ix_labs_city"), "labs", ["city"], unique=False)
     op.create_index(op.f("ix_labs_slug"), "labs", ["slug"], unique=True)
@@ -129,15 +117,9 @@ def upgrade() -> None:
     op.drop_constraint("reports_booking_id_fkey", "reports", type_="foreignkey")
     op.create_foreign_key(None, "reports", "bookings", ["booking_id"], ["id"])
     op.add_column("technicians", sa.Column("lab_id", sa.UUID(), nullable=True))
-    op.add_column(
-        "technicians", sa.Column("name", sa.String(length=100), nullable=False)
-    )
-    op.add_column(
-        "technicians", sa.Column("phone", sa.String(length=15), nullable=False)
-    )
-    op.add_column(
-        "technicians", sa.Column("vehicle", sa.String(length=50), nullable=True)
-    )
+    op.add_column("technicians", sa.Column("name", sa.String(length=100), nullable=False))
+    op.add_column("technicians", sa.Column("phone", sa.String(length=15), nullable=False))
+    op.add_column("technicians", sa.Column("vehicle", sa.String(length=50), nullable=True))
     op.add_column(
         "technicians",
         sa.Column("profile_image_url", sa.String(length=500), nullable=True),
@@ -190,9 +172,7 @@ def downgrade() -> None:
     )
     op.add_column(
         "technicians",
-        sa.Column(
-            "vehicle_type", sa.VARCHAR(length=20), autoincrement=False, nullable=True
-        ),
+        sa.Column("vehicle_type", sa.VARCHAR(length=20), autoincrement=False, nullable=True),
     )
     op.add_column(
         "technicians",
@@ -234,9 +214,7 @@ def downgrade() -> None:
             nullable=True,
         ),
     )
-    op.add_column(
-        "labs", sa.Column("owner_id", sa.UUID(), autoincrement=False, nullable=True)
-    )
+    op.add_column("labs", sa.Column("owner_id", sa.UUID(), autoincrement=False, nullable=True))
     op.add_column(
         "labs",
         sa.Column(
@@ -259,20 +237,14 @@ def downgrade() -> None:
     )
     op.add_column(
         "labs",
-        sa.Column(
-            "license_number", sa.VARCHAR(length=50), autoincrement=False, nullable=False
-        ),
+        sa.Column("license_number", sa.VARCHAR(length=50), autoincrement=False, nullable=False),
     )
     op.create_foreign_key("labs_owner_id_fkey", "labs", "users", ["owner_id"], ["id"])
     op.drop_index(op.f("ix_labs_slug"), table_name="labs")
     op.drop_index(op.f("ix_labs_city"), table_name="labs")
     op.create_unique_constraint("labs_license_number_key", "labs", ["license_number"])
-    op.alter_column(
-        "labs", "lng", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=True
-    )
-    op.alter_column(
-        "labs", "lat", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=True
-    )
+    op.alter_column("labs", "lng", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=True)
+    op.alter_column("labs", "lat", existing_type=sa.DOUBLE_PRECISION(precision=53), nullable=True)
     op.alter_column(
         "labs",
         "city",
@@ -356,15 +328,11 @@ def downgrade() -> None:
         "support_tickets",
         sa.Column("id", sa.UUID(), autoincrement=False, nullable=False),
         sa.Column("user_id", sa.UUID(), autoincrement=False, nullable=True),
-        sa.Column(
-            "subject", sa.VARCHAR(length=200), autoincrement=False, nullable=False
-        ),
+        sa.Column("subject", sa.VARCHAR(length=200), autoincrement=False, nullable=False),
         sa.Column("description", sa.TEXT(), autoincrement=False, nullable=False),
         sa.Column(
             "status",
-            postgresql.ENUM(
-                "open", "in_progress", "resolved", "closed", name="ticketstatus"
-            ),
+            postgresql.ENUM("open", "in_progress", "resolved", "closed", name="ticketstatus"),
             autoincrement=False,
             nullable=True,
         ),
@@ -374,9 +342,7 @@ def downgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
-        sa.Column(
-            "category", sa.VARCHAR(length=50), autoincrement=False, nullable=True
-        ),
+        sa.Column("category", sa.VARCHAR(length=50), autoincrement=False, nullable=True),
         sa.Column(
             "created_at",
             postgresql.TIMESTAMP(timezone=True),
@@ -389,9 +355,7 @@ def downgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
-        sa.ForeignKeyConstraint(
-            ["user_id"], ["users.id"], name="support_tickets_user_id_fkey"
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], name="support_tickets_user_id_fkey"),
         sa.PrimaryKeyConstraint("id", name="support_tickets_pkey"),
     )
     # ### end Alembic commands ###

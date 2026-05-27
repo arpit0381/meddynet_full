@@ -45,19 +45,13 @@ def upgrade() -> None:
         ),
     )
     op.add_column("reports", sa.Column("cloud_url", sa.Text(), nullable=False))
-    op.add_column(
-        "reports", sa.Column("cloud_path", sa.String(length=200), nullable=False)
-    )
+    op.add_column("reports", sa.Column("cloud_path", sa.String(length=200), nullable=False))
     op.add_column(
         "reports",
         sa.Column("file_size_bytes", sa.Integer(), nullable=False, server_default="0"),
     )
-    op.add_column(
-        "reports", sa.Column("is_abnormal", sa.Boolean(), server_default="false")
-    )
-    op.add_column(
-        "reports", sa.Column("notified_at", sa.DateTime(timezone=True), nullable=True)
-    )
+    op.add_column("reports", sa.Column("is_abnormal", sa.Boolean(), server_default="false"))
+    op.add_column("reports", sa.Column("notified_at", sa.DateTime(timezone=True), nullable=True))
 
 
 def downgrade() -> None:
@@ -68,9 +62,5 @@ def downgrade() -> None:
     op.drop_column("reports", "cloud_url")
     op.drop_column("reports", "uploaded_by_tech_id")
     op.drop_column("reports", "lab_id")
-    op.add_column(
-        "reports", sa.Column("is_analyzed", sa.Boolean(), server_default="false")
-    )
-    op.add_column(
-        "reports", sa.Column("file_url", sa.String(length=500), nullable=False)
-    )
+    op.add_column("reports", sa.Column("is_analyzed", sa.Boolean(), server_default="false"))
+    op.add_column("reports", sa.Column("file_url", sa.String(length=500), nullable=False))

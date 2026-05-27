@@ -34,9 +34,7 @@ def _serialize_booking(booking, lab=None, test_names=None, payment_status="pendi
         "type": booking.type.value if booking.type else "home_collection",
         "status": booking.status.value if booking.status else "pending",
         "payment_status": payment_status,
-        "scheduled_at": (
-            booking.scheduled_at.isoformat() if booking.scheduled_at else None
-        ),
+        "scheduled_at": (booking.scheduled_at.isoformat() if booking.scheduled_at else None),
         "address": booking.address,
         "lat": booking.lat,
         "lng": booking.lng,
@@ -48,9 +46,7 @@ def _serialize_booking(booking, lab=None, test_names=None, payment_status="pendi
         "promo_code": booking.promo_code,
         "discount_amount": booking.discount_amount,
         "notes": booking.notes,
-        "cancelled_at": (
-            booking.cancelled_at.isoformat() if booking.cancelled_at else None
-        ),
+        "cancelled_at": (booking.cancelled_at.isoformat() if booking.cancelled_at else None),
         "cancel_reason": booking.cancel_reason,
         "created_at": booking.created_at.isoformat() if booking.created_at else None,
         # Enriched fields for frontend
@@ -77,9 +73,7 @@ async def create_booking(
 ):
     """Create a new test booking with automated payment initialization."""
 
-    logger.info(
-        f"Generating booking for user {current_user['sub']} at lab {payload.lab_id}"
-    )
+    logger.info(f"Generating booking for user {current_user['sub']} at lab {payload.lab_id}")
     try:
         user_uuid = uuid.UUID(str(current_user["sub"]))
         lab_uuid = uuid.UUID(str(payload.lab_id))
@@ -112,10 +106,7 @@ async def create_booking(
             promo_code=payload.promo_code,
             discount_amount=0,
             notes=payload.notes,
-            tests=[
-                BookingTest(lab_test_id=test.id, price_at_booking=test.price)
-                for test in tests_to_link
-            ],
+            tests=[BookingTest(lab_test_id=test.id, price_at_booking=test.price) for test in tests_to_link],
         )
         db.add(new_booking)
         await db.flush()
@@ -189,11 +180,7 @@ async def create_booking(
             "lab_id": str(new_booking.lab_id),
             "type": new_booking.type.value,
             "status": new_booking.status.value,
-            "scheduled_at": (
-                new_booking.scheduled_at.isoformat()
-                if new_booking.scheduled_at
-                else None
-            ),
+            "scheduled_at": (new_booking.scheduled_at.isoformat() if new_booking.scheduled_at else None),
             "address": new_booking.address,
             "patient_name": new_booking.patient_name,
             "patient_phone": new_booking.patient_phone,
@@ -203,9 +190,7 @@ async def create_booking(
             "discount_amount": new_booking.discount_amount,
             "razorpay_order_id": order_id,
             "amount": total_amount,
-            "created_at": (
-                new_booking.created_at.isoformat() if new_booking.created_at else None
-            ),
+            "created_at": (new_booking.created_at.isoformat() if new_booking.created_at else None),
             "tests": test_summaries,
         }
 
@@ -214,9 +199,7 @@ async def create_booking(
     except Exception as e:
         logger.error(f"====== BOOKING ERROR ====== \n{str(e)}", exc_info=True)
         await db.rollback()
-        raise HTTPException(
-            status_code=500, detail="Booking creation failed. Please try again."
-        )
+        raise HTTPException(status_code=500, detail="Booking creation failed. Please try again.")
 
 
 @router.post("/lab/quick", response_model=BookingResponse)
@@ -227,15 +210,11 @@ async def lab_quick_schedule(
 ):
     """Allow labs to manually schedule a visit (walk-in or home collection)."""
     # 1. Verify Lab Identity
-    res = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    res = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = res.scalar_one_or_none()
 
     if not user or not user.lab_id:
-        raise HTTPException(
-            status_code=403, detail="Only Lab Admins can use quick schedule"
-        )
+        raise HTTPException(status_code=403, detail="Only Lab Admins can use quick schedule")
 
     # 2. Create the Booking
     new_booking = Booking(
@@ -258,9 +237,7 @@ async def lab_quick_schedule(
         await db.refresh(new_booking)
     except Exception as e:
         await db.rollback()
-        raise HTTPException(
-            status_code=500, detail="Failed to save schedule. Please try again."
-        )
+        raise HTTPException(status_code=500, detail="Failed to save schedule. Please try again.")
 
     # 3. Track Lab Activity
     try:
@@ -321,14 +298,9 @@ async def get_my_bookings(
     booking_ids = [b.id for b, _ in rows]
     if booking_ids:
         pay_res = await db.execute(
-            select(Payment.booking_id, Payment.status).filter(
-                Payment.booking_id.in_(booking_ids)
-            )
+            select(Payment.booking_id, Payment.status).filter(Payment.booking_id.in_(booking_ids))
         )
-        payment_map = {
-            row[0]: row[1].value if hasattr(row[1], "value") else str(row[1])
-            for row in pay_res.all()
-        }
+        payment_map = {row[0]: row[1].value if hasattr(row[1], "value") else str(row[1]) for row in pay_res.all()}
     else:
         payment_map = {}
 
@@ -383,21 +355,13 @@ async def get_booking_detail(
     if booking.tests:
         test_ids = [bt.lab_test_id for bt in booking.tests]
         if test_ids:
-            t_res = await db.execute(
-                select(LabTest.name).filter(LabTest.id.in_(test_ids))
-            )
+            t_res = await db.execute(select(LabTest.name).filter(LabTest.id.in_(test_ids)))
             test_names = list(t_res.scalars().all())
 
     # Fetch Payment Status
-    pay_res = await db.execute(
-        select(Payment.status).filter(Payment.booking_id == b_id)
-    )
+    pay_res = await db.execute(select(Payment.status).filter(Payment.booking_id == b_id))
     pay_status_obj = pay_res.scalar_one_or_none()
-    p_status = (
-        pay_status_obj.value
-        if pay_status_obj and hasattr(pay_status_obj, "value")
-        else "pending"
-    )
+    p_status = pay_status_obj.value if pay_status_obj and hasattr(pay_status_obj, "value") else "pending"
 
     return _serialize_booking(booking, lab, test_names, p_status)
 
@@ -421,17 +385,11 @@ async def update_booking_status(
     user_role = current_user.get("role")
     user_lab_id = current_user.get("lab_id")
 
-    is_lab_staff = user_role in ["lab_admin", "lab_staff"] and str(
-        booking.lab_id
-    ) == str(user_lab_id)
-    is_assigned_tech = user_role == "technician" and str(booking.tech_id) == str(
-        current_user.get("technician_id")
-    )
+    is_lab_staff = user_role in ["lab_admin", "lab_staff"] and str(booking.lab_id) == str(user_lab_id)
+    is_assigned_tech = user_role == "technician" and str(booking.tech_id) == str(current_user.get("technician_id"))
 
     if not (is_lab_staff or is_assigned_tech or user_role == "admin"):
-        raise HTTPException(
-            status_code=403, detail="Unauthorized to update this booking status"
-        )
+        raise HTTPException(status_code=403, detail="Unauthorized to update this booking status")
 
     new_status_str = payload.get("status")
     if not new_status_str:
@@ -455,9 +413,7 @@ async def update_booking_status(
             metadata={"new_status": booking.status.value},
         )
     except Exception as e:
-        logger.error(
-            f"Failed to track status update activity for booking {booking.id}: {e}"
-        )
+        logger.error(f"Failed to track status update activity for booking {booking.id}: {e}")
 
     return {"message": "Status updated", "status": booking.status.value}
 
@@ -480,9 +436,7 @@ async def cancel_booking(
         raise HTTPException(status_code=404, detail="Booking not found")
 
     if booking.status not in [BookingStatus.pending, BookingStatus.confirmed]:
-        raise HTTPException(
-            status_code=400, detail="Cannot cancel booking in current status"
-        )
+        raise HTTPException(status_code=400, detail="Cannot cancel booking in current status")
 
     booking.status = BookingStatus.cancelled
     booking.cancelled_at = datetime.now(timezone.utc)
@@ -511,11 +465,7 @@ async def track_phlebotomist(
 ):
     try:
         b_id = uuid.UUID(booking_id) if isinstance(booking_id, str) else booking_id
-        u_id = (
-            uuid.UUID(current_user["sub"])
-            if isinstance(current_user["sub"], str)
-            else current_user["sub"]
-        )
+        u_id = uuid.UUID(current_user["sub"]) if isinstance(current_user["sub"], str) else current_user["sub"]
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
 
@@ -528,9 +478,7 @@ async def track_phlebotomist(
     row = result.fetchone()
 
     if not row:
-        raise HTTPException(
-            status_code=404, detail="Tracking unavailable for this booking"
-        )
+        raise HTTPException(status_code=404, detail="Tracking unavailable for this booking")
 
     booking, tech = row
 

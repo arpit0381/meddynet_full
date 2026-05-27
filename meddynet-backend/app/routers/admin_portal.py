@@ -32,9 +32,7 @@ def check_admin(current_user: dict = Depends(get_current_user)):
 
 
 @router.get("/stats")
-async def get_admin_stats(
-    current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)
-):
+async def get_admin_stats(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
     """
     Returns platform-wide KPIs for the Admin Dashboard.
     """
@@ -46,24 +44,16 @@ async def get_admin_stats(
     total_labs_res = await db.execute(select(func.count(Lab.id)))
     total_labs = total_labs_res.scalar() or 0
 
-    pending_labs_res = await db.execute(
-        select(func.count(Lab.id)).filter(Lab.is_verified.is_(False))
-    )
+    pending_labs_res = await db.execute(select(func.count(Lab.id)).filter(Lab.is_verified.is_(False)))
     pending_labs = pending_labs_res.scalar() or 0
 
     # 3. Bookings Today
-    today_start = datetime.now(timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
-    bookings_today_res = await db.execute(
-        select(func.count(Booking.id)).filter(Booking.created_at >= today_start)
-    )
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    bookings_today_res = await db.execute(select(func.count(Booking.id)).filter(Booking.created_at >= today_start))
     bookings_today = bookings_today_res.scalar() or 0
 
     # 4. Total Revenue MTD (Month to Date)
-    month_start = datetime.now(timezone.utc).replace(
-        day=1, hour=0, minute=0, second=0, microsecond=0
-    )
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     total_revenue_mtd_res = await db.execute(
         select(func.sum(Booking.total_amount)).filter(
             Booking.created_at >= month_start, Booking.status != BookingStatus.cancelled
@@ -73,9 +63,7 @@ async def get_admin_stats(
 
     # 5. Open Support Tickets
     open_tickets_res = await db.execute(
-        select(func.count(SupportTicket.id)).filter(
-            SupportTicket.status == TicketStatus.open
-        )
+        select(func.count(SupportTicket.id)).filter(SupportTicket.status == TicketStatus.open)
     )
     open_tickets = open_tickets_res.scalar() or 0
 
@@ -111,11 +99,7 @@ async def get_admin_stats(
     for i, row in enumerate(type_res.all()):
         booking_types_data.append(
             {
-                "name": (
-                    "Home Collection"
-                    if row[0].value == "home_collection"
-                    else "Lab Visit"
-                ),
+                "name": ("Home Collection" if row[0].value == "home_collection" else "Lab Visit"),
                 "value": row[1],
                 "color": colors[i % len(colors)],
             }
@@ -130,9 +114,7 @@ async def get_admin_stats(
         "open_support_tickets": open_tickets,
         "performance_data": performance_data,
         "booking_types_data": booking_types_data,
-        "recent_activity": await mongo_service.get_user_notifications(
-            str(current_user["sub"]), limit=10
-        ),
+        "recent_activity": await mongo_service.get_user_notifications(str(current_user["sub"]), limit=10),
     }
 
 
@@ -151,15 +133,11 @@ async def get_platform_health(current_user: User = Depends(check_admin)):
 
 
 @router.get("/onboarding/labs")
-async def list_onboarding_labs(
-    current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)
-):
+async def list_onboarding_labs(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
     """
     Returns labs that are pending verification with their accreditation docs.
     """
-    result = await db.execute(
-        select(Lab).filter(Lab.is_verified.is_(False)).order_by(Lab.created_at.desc())
-    )
+    result = await db.execute(select(Lab).filter(Lab.is_verified.is_(False)).order_by(Lab.created_at.desc()))
     labs = result.scalars().all()
 
     formatted = []
@@ -172,9 +150,7 @@ async def list_onboarding_labs(
                 "plan": "Starter",  # Default for new labs
                 "submittedAt": lab.created_at.isoformat(),
                 "assignedTo": None,
-                "stage": (
-                    "Applied" if not lab.nabl_certificate_url else "Documents Submitted"
-                ),
+                "stage": ("Applied" if not lab.nabl_certificate_url else "Documents Submitted"),
                 "nabl_url": lab.nabl_certificate_url,
                 "pathologist": lab.pathologist_name,
                 "reg_no": lab.registration_number,
@@ -195,10 +171,7 @@ async def list_labs(
     Lists all labs for management.
     """
     result = await db.execute(
-        select(Lab)
-        .order_by(Lab.is_verified.asc(), Lab.created_at.desc())
-        .offset(skip)
-        .limit(limit)
+        select(Lab).order_by(Lab.is_verified.asc(), Lab.created_at.desc()).offset(skip).limit(limit)
     )
     return result.scalars().all()
 
@@ -213,9 +186,7 @@ async def list_users(
     """
     Lists all users (patients) for management.
     """
-    result = await db.execute(
-        select(User).filter(User.role == "user").offset(skip).limit(limit)
-    )
+    result = await db.execute(select(User).filter(User.role == "user").offset(skip).limit(limit))
     return result.scalars().all()
 
 
@@ -359,9 +330,7 @@ async def delete_user(
 
     # FIX 7: Soft-delete instead of hard delete to prevent FK constraint violations
     # Check for related records and warn admin
-    related_bookings = await db.execute(
-        select(func.count(Booking.id)).filter(Booking.user_id == user_id)
-    )
+    related_bookings = await db.execute(select(func.count(Booking.id)).filter(Booking.user_id == user_id))
     booking_count = related_bookings.scalar() or 0
 
     user.is_active = False
@@ -383,12 +352,7 @@ async def list_support_tickets(
     """
     Lists all support tickets on the platform.
     """
-    result = await db.execute(
-        select(SupportTicket)
-        .order_by(SupportTicket.updated_at.desc())
-        .offset(skip)
-        .limit(limit)
-    )
+    result = await db.execute(select(SupportTicket).order_by(SupportTicket.updated_at.desc()).offset(skip).limit(limit))
     return result.scalars().all()
 
 
@@ -402,9 +366,7 @@ async def respond_to_ticket(
     """
     Sends a response to a support ticket and optionally resolves it.
     """
-    result = await db.execute(
-        select(SupportTicket).filter(SupportTicket.id == ticket_id)
-    )
+    result = await db.execute(select(SupportTicket).filter(SupportTicket.id == ticket_id))
     ticket = result.scalar_one_or_none()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
@@ -429,16 +391,12 @@ async def respond_to_ticket(
 
 
 @router.get("/financials")
-async def get_financials(
-    current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)
-):
+async def get_financials(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
     """
     Returns a list of financial transactions derived from bookings.
     """
     # Commission logic
-    result = await db.execute(
-        select(Booking).limit(100).order_by(Booking.created_at.desc())
-    )
+    result = await db.execute(select(Booking).limit(100).order_by(Booking.created_at.desc()))
     bookings = result.scalars().all()
 
     txs = []
@@ -457,9 +415,7 @@ async def get_financials(
 
 
 @router.get("/payouts/pending")
-async def get_pending_payouts(
-    current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)
-):
+async def get_pending_payouts(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
     """
     Lists all paid payments that haven't been transferred to the lab.
     """
@@ -485,9 +441,7 @@ async def get_pending_payouts(
 
 
 @router.post("/payouts/process")
-async def process_payouts(
-    current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)
-):
+async def process_payouts(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
     """
     Triggers bank transfers via Razorpay Route for all pending payments.
     """
@@ -519,9 +473,7 @@ async def process_payouts(
             stats["processed"] += 1
 
             # Update Lab Wallet status (Move from pending to paid out locally)
-            wallet_res = await db.execute(
-                select(LabWallet).filter(LabWallet.lab_id == pay.lab_id)
-            )
+            wallet_res = await db.execute(select(LabWallet).filter(LabWallet.lab_id == pay.lab_id))
             wallet = wallet_res.scalar_one_or_none()
             if wallet:
                 wallet.pending_balance -= pay.lab_amount
@@ -546,15 +498,11 @@ async def process_payouts(
 
 
 @router.get("/reports-audit")
-async def get_all_reports(
-    current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)
-):
+async def get_all_reports(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
     """
     Lists all diagnostic reports across the platform.
     """
-    result = await db.execute(
-        select(Booking).filter(Booking.status == BookingStatus.completed).limit(50)
-    )
+    result = await db.execute(select(Booking).filter(Booking.status == BookingStatus.completed).limit(50))
     bookings = result.scalars().all()
 
     reports = []
@@ -578,12 +526,7 @@ async def list_audit_logs(current_user: dict = Depends(check_admin), limit: int 
     """
     Returns a chronological stream of administrative actions from MongoDB.
     """
-    activities = (
-        await mongo_service.activity.find()
-        .sort("timestamp", -1)
-        .limit(limit)
-        .to_list(length=limit)
-    )
+    activities = await mongo_service.activity.find().sort("timestamp", -1).limit(limit).to_list(length=limit)
 
     # Format for the frontend datatable
     formatted_logs = []
@@ -606,9 +549,7 @@ async def list_audit_logs(current_user: dict = Depends(check_admin), limit: int 
 
 
 @router.post("/cleanup/deduplicate-labs")
-async def deduplicate_labs(
-    current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)
-):
+async def deduplicate_labs(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
     """
     Finds duplicate labs by name (case-insensitive) and deactivates them,
     keeping only the most recently created one active per unique name.

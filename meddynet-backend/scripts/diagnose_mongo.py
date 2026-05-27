@@ -103,9 +103,7 @@ try:
     # Extract user:pass@
     import re
 
-    match = re.match(
-        r"mongodb\+srv://([^@]+)@.*?\.6lzhtrl\.mongodb\.net.*?/(.*)", srv_uri
-    )
+    match = re.match(r"mongodb\+srv://([^@]+)@.*?\.6lzhtrl\.mongodb\.net.*?/(.*)", srv_uri)
     if match:
         creds = match.group(1)
         rest = match.group(2)

@@ -34,16 +34,10 @@ class SupportTicket(Base):
     status = Column(Enum(TicketStatus), default=TicketStatus.open)
     priority = Column(Enum(TicketPriority), default=TicketPriority.medium)
 
-    category = Column(
-        String(50), nullable=True
-    )  # e.g., 'payment', 'report', 'tech_issue'
+    category = Column(String(50), nullable=True)  # e.g., 'payment', 'report', 'tech_issue'
     messages = Column(JSON, default=lambda: [])  # Chat-style thread of messages
 
-    created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
-    updated_at = Column(
-        DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", backref="tickets")

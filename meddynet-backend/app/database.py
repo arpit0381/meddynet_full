@@ -5,9 +5,7 @@ from sqlalchemy.orm import declarative_base
 from app.config import settings
 
 # Resolve Connection String: Prioritize Neon for Production/Serverless
-db_url = (
-    settings.NEON_DATABASE_URL if settings.NEON_DATABASE_URL else settings.DATABASE_URL
-)
+db_url = settings.NEON_DATABASE_URL if settings.NEON_DATABASE_URL else settings.DATABASE_URL
 
 from sqlalchemy import text
 from app.utils.session_context import get_current_user_id
@@ -25,9 +23,7 @@ pg_engine = create_async_engine(
 )
 
 # FIX 11: Module-level singleton — previously recreated on every request inside get_db()
-AsyncSessionLocal = async_sessionmaker(
-    pg_engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
-)
+AsyncSessionLocal = async_sessionmaker(pg_engine, class_=AsyncSession, expire_on_commit=False, autoflush=False)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
@@ -36,9 +32,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         user_id = get_current_user_id()
         if user_id:
             try:
-                await session.execute(
-                    text(f"SET LOCAL app.current_user_id = '{user_id}'")
-                )
+                await session.execute(text(f"SET LOCAL app.current_user_id = '{user_id}'"))
             except Exception:
                 pass  # Best effort for PG session vars
 

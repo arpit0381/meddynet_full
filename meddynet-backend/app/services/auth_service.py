@@ -30,9 +30,7 @@ try:
 
     # 2. Admin Client (using Service Role for bypassing RLS in Storage/DB)
     # Only use this client for internal server-side operations!
-    supabase_admin: Client = create_client(
-        settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY
-    )
+    supabase_admin: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
 except Exception as e:
     logger.error(f"Supabase client initialization failed: {e}")
     supabase = None

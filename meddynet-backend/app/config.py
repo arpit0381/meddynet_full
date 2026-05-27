@@ -53,15 +53,11 @@ class Settings(BaseSettings):
     TECHNICIAN_PORTAL_URL: str = "http://localhost:3003"
     PATIENT_PORTAL_URL: str = "http://localhost:3000"
 
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     @property
     def cors_origins_list(self) -> List[str]:
-        return [
-            origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()
-        ]
+        return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
 
     @property
     def allowed_admin_ips_list(self) -> List[str]:

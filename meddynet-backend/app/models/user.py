@@ -37,17 +37,13 @@ class User(Base):
 
     # Context IDs
     lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"), nullable=True)
-    technician_id = Column(
-        UUID(as_uuid=True), ForeignKey("technicians.id"), nullable=True
-    )
+    technician_id = Column(UUID(as_uuid=True), ForeignKey("technicians.id"), nullable=True)
 
     # Financials
     wallet_balance = Column(Integer, default=0, nullable=False)  # Balance in paise
 
     is_active = Column(Boolean, default=True)
-    created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

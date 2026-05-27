@@ -16,9 +16,7 @@ async def seed_user():
         # Check if Arpit exists
         from sqlalchemy import select
 
-        res = await db.execute(
-            select(User).filter(User.email == "arpitbajpai038@gmail.com")
-        )
+        res = await db.execute(select(User).filter(User.email == "arpitbajpai038@gmail.com"))
         existing = res.scalar_one_or_none()
 
         if existing:
@@ -37,9 +35,7 @@ async def seed_user():
             db.add(new_user)
 
         await db.commit()
-        print(
-            "Seed Successful! You can now login with: arpitbajpai038@gmail.com / Password@123"
-        )
+        print("Seed Successful! You can now login with: arpitbajpai038@gmail.com / Password@123")
 
 
 if __name__ == "__main__":

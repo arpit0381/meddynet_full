@@ -40,9 +40,7 @@ async def verify_gps_flow():
             )
             db.add(lab)
 
-            patient = User(
-                id=user_id, name=f"Patient {u_id}", phone=p_phone, role="user"
-            )
+            patient = User(id=user_id, name=f"Patient {u_id}", phone=p_phone, role="user")
             db.add(patient)
 
             tech_user = User(
@@ -100,9 +98,7 @@ async def verify_gps_flow():
             patient_context = {"sub": str(user_id), "role": "user"}
             db_track = async_session()
             async with db_track as session:
-                tracking = await track_phlebotomist(
-                    str(booking_id), patient_context, session
-                )
+                tracking = await track_phlebotomist(str(booking_id), patient_context, session)
                 print(f"  [OK] Tracking Data Received: {tracking}")
 
                 if tracking["lat"] == 19.1176 and tracking["lng"] == 72.9060:

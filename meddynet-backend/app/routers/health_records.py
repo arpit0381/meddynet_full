@@ -70,14 +70,10 @@ async def upload_health_record(
 
 
 @router.get("")
-async def get_my_records(
-    db: AsyncSession = Depends(get_db), user: dict = Depends(get_current_user)
-):
+async def get_my_records(db: AsyncSession = Depends(get_db), user: dict = Depends(get_current_user)):
     user_id = uuid.UUID(user["sub"])
     result = await db.execute(
-        select(HealthRecord)
-        .filter(HealthRecord.user_id == user_id)
-        .order_by(HealthRecord.created_at.desc())
+        select(HealthRecord).filter(HealthRecord.user_id == user_id).order_by(HealthRecord.created_at.desc())
     )
     records = result.scalars().all()
 
@@ -104,9 +100,7 @@ async def delete_record(
 ):
     user_id = uuid.UUID(user["sub"])
     result = await db.execute(
-        select(HealthRecord).filter(
-            HealthRecord.id == uuid.UUID(record_id), HealthRecord.user_id == user_id
-        )
+        select(HealthRecord).filter(HealthRecord.id == uuid.UUID(record_id), HealthRecord.user_id == user_id)
     )
     record = result.scalar_one_or_none()
     if not record:

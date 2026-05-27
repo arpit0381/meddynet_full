@@ -14,11 +14,7 @@ from sqlalchemy.future import select
 
 logger = logging.getLogger(__name__)
 
-if (
-    settings.CLOUDINARY_CLOUD_NAME
-    and settings.CLOUDINARY_API_KEY
-    and settings.CLOUDINARY_API_SECRET
-):
+if settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY and settings.CLOUDINARY_API_SECRET:
     cloudinary.config(
         cloud_name=settings.CLOUDINARY_CLOUD_NAME,
         api_key=settings.CLOUDINARY_API_KEY,
@@ -106,9 +102,7 @@ def generate_pdf_bytes(booking_id: str, results: dict) -> bytes:
             1.5 * cm,
             "This is a computer-generated report. No signature required.",
         )
-        c.drawString(
-            2 * cm, 1 * cm, "MeddyNet Health Technologies Pvt. Ltd. — www.meddynet.com"
-        )
+        c.drawString(2 * cm, 1 * cm, "MeddyNet Health Technologies Pvt. Ltd. — www.meddynet.com")
 
         c.save()
         return buffer.getvalue()
@@ -174,9 +168,7 @@ async def async_generate_and_upload(booking_id: str, results: dict):
         logger.error(f"Failed to update booking {booking_id} with report URL: {e}")
 
     # Analytics
-    await analytics_service.log_report_generation(
-        booking_id, lab_id="backend_task_lab_id", report_url=url
-    )
+    await analytics_service.log_report_generation(booking_id, lab_id="backend_task_lab_id", report_url=url)
     await analytics_service.log_event(
         level="info",
         event="report_delivery_dispatched",
@@ -189,8 +181,6 @@ async def async_generate_and_upload(booking_id: str, results: dict):
 
 @celery_app.task
 def generate_pdf_report(booking_id: str, results: dict):
-    logger.info(
-        f"Starting async background task to create and upload report for {booking_id}"
-    )
+    logger.info(f"Starting async background task to create and upload report for {booking_id}")
     url = asyncio.run(async_generate_and_upload(booking_id, results))
     return {"status": "success", "report_url": url}

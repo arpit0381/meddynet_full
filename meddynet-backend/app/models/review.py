@@ -17,6 +17,4 @@ class Review(Base):
     rating = Column(Float, nullable=False)
     comment = Column(Text, nullable=True)
 
-    created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

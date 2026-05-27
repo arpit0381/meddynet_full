@@ -33,9 +33,7 @@ class Lab(Base):
     slug = Column(String(100), unique=True, nullable=False, index=True)
     phone = Column(String(15), nullable=False)
     email = Column(String(100), nullable=True)
-    razorpay_account_id = Column(
-        String(50), nullable=True
-    )  # Linked account for Razorpay Route
+    razorpay_account_id = Column(String(50), nullable=True)  # Linked account for Razorpay Route
     city = Column(String(100), nullable=False, index=True)
     address = Column(Text, nullable=False)
     lat = Column(Float, nullable=False)
@@ -62,9 +60,7 @@ class Lab(Base):
     commission_rate = Column(Float, default=0.15)
 
     is_active = Column(Boolean, default=True)
-    created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     tests = relationship("LabTest", back_populates="lab", cascade="all, delete-orphan")
 

@@ -10,9 +10,7 @@ logger = logging.getLogger(__name__)
 try:
     redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
 except Exception as e:
-    logger.warning(
-        f"Redis not available ({e}). Using in-process memory for OTP/Caching."
-    )
+    logger.warning(f"Redis not available ({e}). Using in-process memory for OTP/Caching.")
 
     class MockRedis:
         def __init__(self):

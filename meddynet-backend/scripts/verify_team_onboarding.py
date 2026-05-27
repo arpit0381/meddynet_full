@@ -45,16 +45,12 @@ async def verify_tech_onboarding():
             from app.models.user import User
             from app.models.technician import Technician
 
-            res_user = await db.execute(
-                select(User).filter(User.phone == tech_data.phone)
-            )
+            res_user = await db.execute(select(User).filter(User.phone == tech_data.phone))
             user = res_user.scalar_one()
             print(f"  [VERIFY] User Role: {user.role} (Expected: technician)")
             print(f"  [VERIFY] User Lab ID: {user.lab_id} (Expected: {lab_id})")
 
-            res_tech = await db.execute(
-                select(Technician).filter(Technician.user_id == user.id)
-            )
+            res_tech = await db.execute(select(Technician).filter(Technician.user_id == user.id))
             tech = res_tech.scalar_one()
             print(f"  [VERIFY] Tech Record Created. Status: {tech.status}")
 

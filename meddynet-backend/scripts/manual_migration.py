@@ -13,9 +13,7 @@ def migrate():
 
         # 1. Add image_url fields
         try:
-            conn.execute(
-                text("ALTER TABLE users ADD COLUMN profile_image_url VARCHAR(500);")
-            )
+            conn.execute(text("ALTER TABLE users ADD COLUMN profile_image_url VARCHAR(500);"))
             print("Added profile_image_url to users")
         except Exception as e:
             print(f"Users image column: {e}")
@@ -27,11 +25,7 @@ def migrate():
             print(f"Labs image column: {e}")
 
         try:
-            conn.execute(
-                text(
-                    "ALTER TABLE technicians ADD COLUMN profile_image_url VARCHAR(500);"
-                )
-            )
+            conn.execute(text("ALTER TABLE technicians ADD COLUMN profile_image_url VARCHAR(500);"))
             print("Added profile_image_url to technicians")
         except Exception as e:
             print(f"Technicians image column: {e}")

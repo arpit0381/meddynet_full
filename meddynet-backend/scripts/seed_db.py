@@ -91,9 +91,7 @@ async def seed():
                 )
                 session.add(test)
 
-            print(
-                "--- Seeding Technicians (using Manual SQL for Enum compatibility) ---"
-            )
+            print("--- Seeding Technicians (using Manual SQL for Enum compatibility) ---")
             tech_user_id = uuid.uuid4()
             tech_user = User(
                 id=tech_user_id,

@@ -55,11 +55,7 @@ def send_otp_sms_task(self, phone: str, otp: str):
     try:
         # Standardize on asynchronous delivery via the notification service provider.
         # This will use the settings configured (MSG91/Supabase).
-        asyncio.run(
-            notification_service.provider.send_sms(
-                phone, f"Your MeddyNet OTP is {otp}. Valid for 5 mins."
-            )
-        )
+        asyncio.run(notification_service.provider.send_sms(phone, f"Your MeddyNet OTP is {otp}. Valid for 5 mins."))
     except Exception as exc:
         logger.error(f"OTP delivery failed for {phone}: {exc}")
         # Retry with exponential backoff if configured

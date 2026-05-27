@@ -46,9 +46,7 @@ async def list_labs(
             dlng = math.radians(ln2 - ln1)
             a = (
                 math.sin(dlat / 2) ** 2
-                + math.cos(math.radians(l1))
-                * math.cos(math.radians(l2))
-                * math.sin(dlng / 2) ** 2
+                + math.cos(math.radians(l1)) * math.cos(math.radians(l2)) * math.sin(dlng / 2) ** 2
             )
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
             return R * c
@@ -74,9 +72,7 @@ async def list_labs(
             .filter(Review.lab_id.in_(lab_ids))
             .group_by(Review.lab_id)
         )
-        rev_stats = {
-            r.lab_id: {"avg": round(r.avg_r, 1), "c": r.c} for r in rev_res.all()
-        }
+        rev_stats = {r.lab_id: {"avg": round(r.avg_r, 1), "c": r.c} for r in rev_res.all()}
         for lab in labs:
             stats = rev_stats.get(lab.id, {"avg": 4.5, "c": 0})
             setattr(lab, "avg_rating", stats["avg"])
@@ -90,9 +86,7 @@ async def get_lab(lab_id: str, db: AsyncSession = Depends(get_db)):
     # Guard: /labs/me is handled exclusively by lab_portal router
     if lab_id == "me":
         raise HTTPException(status_code=404, detail="Use /labs/me with auth token")
-    result = await db.execute(
-        select(Lab).options(selectinload(Lab.tests)).filter(Lab.id == lab_id)
-    )
+    result = await db.execute(select(Lab).options(selectinload(Lab.tests)).filter(Lab.id == lab_id))
     lab = result.scalar_one_or_none()
     if not lab:
         raise HTTPException(status_code=404, detail="Lab not found")
@@ -100,9 +94,7 @@ async def get_lab(lab_id: str, db: AsyncSession = Depends(get_db)):
     from sqlalchemy import func
 
     rev_res = await db.execute(
-        select(
-            func.avg(Review.rating).label("avg_r"), func.count(Review.id).label("c")
-        ).filter(Review.lab_id == lab.id)
+        select(func.avg(Review.rating).label("avg_r"), func.count(Review.id).label("c")).filter(Review.lab_id == lab.id)
     )
     stat = rev_res.first()
     setattr(lab, "avg_rating", round(stat.avg_r, 1) if stat and stat.avg_r else 4.5)
@@ -112,9 +104,7 @@ async def get_lab(lab_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/search", response_model=List[LabResponse])
-async def search_labs(
-    q: str = Query(None), city: str = Query(None), db: AsyncSession = Depends(get_db)
-):
+async def search_labs(q: str = Query(None), city: str = Query(None), db: AsyncSession = Depends(get_db)):
     """
     Search labs by test name or category.
     """
@@ -129,11 +119,7 @@ async def search_labs(
         # Join with tests to find matches
         query = (
             query.join(Lab.tests)
-            .filter(
-                (Lab.name.ilike(f"%{q}%"))
-                | (LabTest.name.ilike(f"%{q}%"))
-                | (LabTest.category.ilike(f"%{q}%"))
-            )
+            .filter((Lab.name.ilike(f"%{q}%")) | (LabTest.name.ilike(f"%{q}%")) | (LabTest.category.ilike(f"%{q}%")))
             .distinct()
         )
 
@@ -156,9 +142,7 @@ async def search_labs(
             .filter(Review.lab_id.in_(lab_ids))
             .group_by(Review.lab_id)
         )
-        rev_stats = {
-            r.lab_id: {"avg": round(r.avg_r, 1), "c": r.c} for r in rev_res.all()
-        }
+        rev_stats = {r.lab_id: {"avg": round(r.avg_r, 1), "c": r.c} for r in rev_res.all()}
         for lab in labs:
             stats = rev_stats.get(lab.id, {"avg": 4.5, "c": 0})
             setattr(lab, "avg_rating", stats["avg"])

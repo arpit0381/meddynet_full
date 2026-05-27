@@ -30,13 +30,9 @@ async def upload_report(
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-    upload_result = await upload_report_to_supabase(
-        report_file, str(booking_id), str(booking.user_id)
-    )
+    upload_result = await upload_report_to_supabase(report_file, str(booking_id), str(booking.user_id))
     if not upload_result:
-        raise HTTPException(
-            status_code=500, detail="Failed to upload report file to storage"
-        )
+        raise HTTPException(status_code=500, detail="Failed to upload report file to storage")
 
     new_report = Report(
         booking_id=booking_id,
@@ -84,9 +80,7 @@ async def upload_report(
 
 @router.get("")
 @router.get("/me")
-async def get_my_reports(
-    current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
+async def get_my_reports(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Fetch all reports for the logged-in user with enriched lab and test info."""
     result = await db.execute(
         select(Report)
@@ -140,9 +134,7 @@ async def get_my_reports(
                     if lab
                     else None
                 ),
-                "test_name": (
-                    " + ".join(test_names) if test_names else "Diagnostic Test"
-                ),
+                "test_name": (" + ".join(test_names) if test_names else "Diagnostic Test"),
             }
         )
 
@@ -176,15 +168,11 @@ async def get_report_detail(
 
     test_names = []
     if booking:
-        bt_res = await db.execute(
-            select(BookingTest).filter(BookingTest.booking_id == booking.id)
-        )
+        bt_res = await db.execute(select(BookingTest).filter(BookingTest.booking_id == booking.id))
         booking_tests = bt_res.scalars().all()
         if booking_tests:
             test_ids = [bt.lab_test_id for bt in booking_tests]
-            t_res = await db.execute(
-                select(LabTest.name).filter(LabTest.id.in_(test_ids))
-            )
+            t_res = await db.execute(select(LabTest.name).filter(LabTest.id.in_(test_ids)))
             test_names = list(t_res.scalars().all())
 
     return {

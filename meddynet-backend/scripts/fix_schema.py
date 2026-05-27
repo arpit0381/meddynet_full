@@ -22,9 +22,7 @@ async def fix_schema():
     for col, col_type in cols_to_add.items():
         try:
             async with pg_engine.begin() as conn:
-                await conn.execute(
-                    text(f"ALTER TABLE labs ADD COLUMN {col} {col_type}")
-                )
+                await conn.execute(text(f"ALTER TABLE labs ADD COLUMN {col} {col_type}"))
                 print(f"Added column: {col}")
         except Exception as e:
             if "already exists" in str(e):

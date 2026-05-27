@@ -55,16 +55,13 @@ async def upload_onboarding_doc(file: UploadFile = File(...)):
 async def register_route(payload: RegisterRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(User).filter(
-            (func.lower(User.email) == func.lower(payload.email))
-            | (User.phone == payload.phone_number)
+            (func.lower(User.email) == func.lower(payload.email)) | (User.phone == payload.phone_number)
         )
     )
     existing_user = result.scalar_one_or_none()
 
     if existing_user:
-        raise HTTPException(
-            status_code=400, detail="User with this email or phone already exists"
-        )
+        raise HTTPException(status_code=400, detail="User with this email or phone already exists")
 
     hashed_pw = get_password_hash(payload.password)
     from datetime import date
@@ -93,9 +90,7 @@ async def register_route(payload: RegisterRequest, db: AsyncSession = Depends(ge
         "role": user.role,
         "is_active": user.is_active,
         "lab_id": str(user.lab_id) if getattr(user, "lab_id", None) else None,
-        "technician_id": (
-            str(user.technician_id) if getattr(user, "technician_id", None) else None
-        ),
+        "technician_id": (str(user.technician_id) if getattr(user, "technician_id", None) else None),
     }
 
     access_token = create_access_token(token_data)
@@ -108,9 +103,7 @@ async def register_route(payload: RegisterRequest, db: AsyncSession = Depends(ge
 async def check_uniqueness(type: str, value: str, db: AsyncSession = Depends(get_db)):
     """Check if email or phone is already registered."""
     if type == "email":
-        res = await db.execute(
-            select(User).filter(func.lower(User.email) == func.lower(value))
-        )
+        res = await db.execute(select(User).filter(func.lower(User.email) == func.lower(value)))
     elif type == "phone":
         res = await db.execute(select(User).filter(User.phone == value))
     else:
@@ -120,19 +113,13 @@ async def check_uniqueness(type: str, value: str, db: AsyncSession = Depends(get
     return {
         "exists": user is not None,
         "role": user.role if user else None,
-        "is_lab_staff": (
-            user.role in ["lab", "lab_admin", "lab_staff"] if user else False
-        ),
+        "is_lab_staff": (user.role in ["lab", "lab_admin", "lab_staff"] if user else False),
     }
 
 
 @router.post("/register-lab", response_model=TokenResponse)
-async def register_lab(
-    payload: LabOnboardingRequest, db: AsyncSession = Depends(get_db)
-):
-    res_email = await db.execute(
-        select(User).filter(func.lower(User.email) == func.lower(payload.admin_email))
-    )
+async def register_lab(payload: LabOnboardingRequest, db: AsyncSession = Depends(get_db)):
+    res_email = await db.execute(select(User).filter(func.lower(User.email) == func.lower(payload.admin_email)))
     existing_user_by_email = res_email.scalar_one_or_none()
 
     res_phone = await db.execute(select(User).filter(User.phone == payload.admin_phone))
@@ -142,18 +129,14 @@ async def register_lab(
 
     if target_user:
         if target_user.role in ["lab_admin", "lab_staff", "lab", "admin"]:
-            logger.warning(
-                f"Conflict: User '{target_user.email}' already has administrative role: {target_user.role}"
-            )
+            logger.warning(f"Conflict: User '{target_user.email}' already has administrative role: {target_user.role}")
             field = "Email" if existing_user_by_email else "Phone"
             raise HTTPException(
                 status_code=400,
                 detail=f"{field} already registered with an active Lab account.",
             )
 
-        logger.info(
-            f"Existing patient user '{target_user.email}' upgrading role to 'lab_admin'."
-        )
+        logger.info(f"Existing patient user '{target_user.email}' upgrading role to 'lab_admin'.")
         # Pre-existing patient is becoming a lab admin
         target_user.role = "lab_admin"
         target_user.hashed_password = get_password_hash(payload.admin_password)
@@ -208,9 +191,7 @@ async def register_lab(
         await db.commit()
     except Exception as e:
         await db.rollback()
-        raise HTTPException(
-            status_code=500, detail="Registration failed. Please try again."
-        )
+        raise HTTPException(status_code=500, detail="Registration failed. Please try again.")
 
     await db.refresh(target_user)
 
@@ -239,9 +220,7 @@ async def register_lab(
             context={"lab_id": str(lab_id), "admin_email": payload.admin_email},
         )
     except Exception as e:
-        logger.warning(
-            f"Non-critical: Platform tracking failed during lab registration: {e}"
-        )
+        logger.warning(f"Non-critical: Platform tracking failed during lab registration: {e}")
 
     # Generate tokens
     token_data = {
@@ -275,15 +254,11 @@ async def send_otp_route(request: Request, payload: SendOTPRequest):
 
         return {"message": "OTP sent successfully"}
     except Exception as e:
-        raise HTTPException(
-            status_code=400, detail="OTP request failed. Please try again."
-        )
+        raise HTTPException(status_code=400, detail="OTP request failed. Please try again.")
 
 
 @router.post("/verify-otp")
-async def verify_otp_route(
-    payload: VerifyOTPRequest, db: AsyncSession = Depends(get_db)
-):
+async def verify_otp_route(payload: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
     try:
         await verify_otp(payload.phone, payload.otp)
 
@@ -336,13 +311,9 @@ async def verify_otp_route(
 # FIX 5: Added rate limiting to prevent brute-force password attacks
 @router.post("/login")
 @limiter.limit("5/minute")
-async def login(
-    request: Request, payload: LoginRequest, db: AsyncSession = Depends(get_db)
-):
+async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depends(get_db)):
     logger.info(f"Login attempt for email='{payload.email}'")
-    result = await db.execute(
-        select(User).filter(func.lower(User.email) == func.lower(payload.email))
-    )
+    result = await db.execute(select(User).filter(func.lower(User.email) == func.lower(payload.email)))
     user = result.scalar_one_or_none()
 
     if not user:
@@ -418,9 +389,7 @@ class TwoFALoginVerifyRequest(BaseModel):
 
 
 @router.post("/2fa/login-verify", response_model=TokenResponse)
-async def verify_2fa_login(
-    payload: TwoFALoginVerifyRequest, db: AsyncSession = Depends(get_db)
-):
+async def verify_2fa_login(payload: TwoFALoginVerifyRequest, db: AsyncSession = Depends(get_db)):
     """Second step of 2FA login: verify OTP using temp_token and return real auth tokens."""
     from app.services.auth_service import decode_token
 
@@ -467,9 +436,7 @@ async def verify_password_endpoint(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
 
     if not user or not getattr(user, "hashed_password", None):
@@ -490,15 +457,11 @@ async def change_password(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
 
     if not user or not getattr(user, "hashed_password", None):
-        raise HTTPException(
-            status_code=400, detail="User not found or password not set"
-        )
+        raise HTTPException(status_code=400, detail="User not found or password not set")
 
     if not verify_password(payload.old_password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect old password")
@@ -510,9 +473,7 @@ async def change_password(
 
 
 @router.post("/refresh")
-async def refresh_token(
-    payload: RefreshTokenRequest, db: AsyncSession = Depends(get_db)
-):
+async def refresh_token(payload: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
     from app.services.auth_service import decode_token
 
     token_data = decode_token(payload.refresh_token)
@@ -560,13 +521,9 @@ class TwoFAVerifyRequest(BaseModel):
 
 
 @router.post("/2fa/enable")
-async def enable_2fa(
-    current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
+async def enable_2fa(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Send a 6-digit OTP to the user's phone to enable 2FA."""
-    result = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -592,9 +549,7 @@ async def verify_2fa(
     db: AsyncSession = Depends(get_db),
 ):
     """Verify the OTP and enable 2FA for the user."""
-    result = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -612,13 +567,9 @@ async def verify_2fa(
 
 
 @router.post("/2fa/disable")
-async def disable_2fa(
-    current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
+async def disable_2fa(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Disable 2FA for the user (requires re-verify via password in frontend)."""
-    result = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

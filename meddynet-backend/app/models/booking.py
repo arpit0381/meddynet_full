@@ -31,9 +31,7 @@ class Booking(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"), nullable=False)
-    technician_id = Column(
-        "tech_id", UUID(as_uuid=True), ForeignKey("technicians.id"), nullable=True
-    )
+    technician_id = Column("tech_id", UUID(as_uuid=True), ForeignKey("technicians.id"), nullable=True)
 
     type = Column(Enum(BookingType), nullable=False)
     status = Column(Enum(BookingStatus), default=BookingStatus.pending)
@@ -56,22 +54,16 @@ class Booking(Base):
     cancelled_at = Column(DateTime(timezone=True), nullable=True)
     cancel_reason = Column(Text, nullable=True)
 
-    created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
-    tests = relationship(
-        "BookingTest", back_populates="booking", cascade="all, delete-orphan"
-    )
+    tests = relationship("BookingTest", back_populates="booking", cascade="all, delete-orphan")
 
 
 class BookingTest(Base):
     __tablename__ = "booking_tests"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id = Column(
-        UUID(as_uuid=True), ForeignKey("bookings.id", ondelete="CASCADE")
-    )
+    booking_id = Column(UUID(as_uuid=True), ForeignKey("bookings.id", ondelete="CASCADE"))
     lab_test_id = Column(UUID(as_uuid=True), ForeignKey("lab_tests.id"))
 
     price_at_booking = Column(Integer, nullable=False)

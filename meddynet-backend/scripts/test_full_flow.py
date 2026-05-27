@@ -32,9 +32,7 @@ async def test_full_flow():
     # PHASE 1: Neon RLS Check
     log(f"[Phase 1] Neon RLS Check...")
     async with async_session() as session:
-        await session.execute(
-            text(f"SET LOCAL app.current_user_id = '{str(test_user_id)}'")
-        )
+        await session.execute(text(f"SET LOCAL app.current_user_id = '{str(test_user_id)}'"))
 
         new_lab = Lab(
             id=test_lab_id,
@@ -48,9 +46,7 @@ async def test_full_flow():
         )
         session.add(new_lab)
 
-        new_user = User(
-            id=test_user_id, phone=test_phone, name="Test Audit User", is_active=True
-        )
+        new_user = User(id=test_user_id, phone=test_phone, name="Test Audit User", is_active=True)
         session.add(new_user)
 
         try:
@@ -60,9 +56,7 @@ async def test_full_flow():
             log(f"FAIL - Neon: Lab/User Creation Failed! {e}")
             return
 
-        await session.execute(
-            text(f"SET LOCAL app.current_user_id = '{str(test_user_id)}'")
-        )
+        await session.execute(text(f"SET LOCAL app.current_user_id = '{str(test_user_id)}'"))
 
         new_booking = Booking(
             id=test_booking_id,
@@ -87,25 +81,13 @@ async def test_full_flow():
         # 4. Verification Check (Isolation)
         try:
             async with session.begin():
-                await session.execute(
-                    text(f"SET LOCAL app.current_user_id = '{str(test_user_id)}'")
-                )
-                res = await session.execute(
-                    text(
-                        f"SELECT count(*) FROM bookings WHERE id = '{str(test_booking_id)}'"
-                    )
-                )
+                await session.execute(text(f"SET LOCAL app.current_user_id = '{str(test_user_id)}'"))
+                res = await session.execute(text(f"SELECT count(*) FROM bookings WHERE id = '{str(test_booking_id)}'"))
                 owner_count = res.scalar()
 
             async with session.begin():
-                await session.execute(
-                    text(f"SET LOCAL app.current_user_id = '{str(uuid.uuid4())}'")
-                )
-                res = await session.execute(
-                    text(
-                        f"SELECT count(*) FROM bookings WHERE id = '{str(test_booking_id)}'"
-                    )
-                )
+                await session.execute(text(f"SET LOCAL app.current_user_id = '{str(uuid.uuid4())}'"))
+                res = await session.execute(text(f"SELECT count(*) FROM bookings WHERE id = '{str(test_booking_id)}'"))
                 stranger_count = res.scalar()
 
             if owner_count == 1:
@@ -115,21 +97,15 @@ async def test_full_flow():
 
             # Check if current role has BYPASSRLS
             res = await session.execute(
-                text(
-                    "SELECT rolbypassrls, rolsuper FROM pg_roles WHERE rolname = current_user"
-                )
+                text("SELECT rolbypassrls, rolsuper FROM pg_roles WHERE rolname = current_user")
             )
             role_info = res.fetchone()
 
             if stranger_count == 0:
-                log(
-                    f"OK - Neon: RLS Isolation Verified. (Other users cannot see this data)."
-                )
+                log(f"OK - Neon: RLS Isolation Verified. (Other users cannot see this data).")
             else:
                 if role_info and (role_info[0] or role_info[1]):
-                    log(
-                        f"OK (WARN) - Neon: RLS Isolation Bypassed (Expected for DB OWNER with BYPASSRLS privileges)."
-                    )
+                    log(f"OK (WARN) - Neon: RLS Isolation Bypassed (Expected for DB OWNER with BYPASSRLS privileges).")
                 else:
                     log(f"FAIL - Neon: RLS ISOLATION FAILED! Count: {stranger_count}")
         except Exception as e:
@@ -160,9 +136,7 @@ async def test_full_flow():
             content = f.read()
             mock_file = UploadFile(filename="test_report.pdf", file=io.BytesIO(content))
 
-            result = await storage_service.upload_report(
-                mock_file, str(test_user_id), str(test_booking_id)
-            )
+            result = await storage_service.upload_report(mock_file, str(test_user_id), str(test_booking_id))
 
             if result and hasattr(result, "get") and result.get("url"):
                 log(f"OK - Supabase: File uploaded to 'reports' bucket.")

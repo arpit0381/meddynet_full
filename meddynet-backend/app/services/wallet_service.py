@@ -13,9 +13,7 @@ async def update_lab_wallet_on_payment(
     wallet = res.scalar_one_or_none()
 
     if not wallet:
-        wallet = LabWallet(
-            lab_id=lab_id, pending_balance=0, total_earned=0, total_paid_out=0
-        )
+        wallet = LabWallet(lab_id=lab_id, pending_balance=0, total_earned=0, total_paid_out=0)
         db.add(wallet)
 
     wallet.pending_balance += lab_amount
@@ -33,9 +31,7 @@ async def update_lab_wallet_on_payment(
     db.add(ledger)
 
 
-async def deduct_lab_wallet_for_payout(
-    lab_id, payout_amount_paise: int, payout_id: str, db: AsyncSession
-):
+async def deduct_lab_wallet_for_payout(lab_id, payout_amount_paise: int, payout_id: str, db: AsyncSession):
     res = await db.execute(select(LabWallet).filter(LabWallet.lab_id == lab_id))
     wallet = res.scalar_one_or_none()
 
@@ -56,9 +52,7 @@ async def deduct_lab_wallet_for_payout(
     db.add(ledger)
 
 
-async def deduct_lab_wallet_for_refund(
-    lab_id, refund_amount_paise: int, refund_id: str, db: AsyncSession
-):
+async def deduct_lab_wallet_for_refund(lab_id, refund_amount_paise: int, refund_id: str, db: AsyncSession):
     res = await db.execute(select(LabWallet).filter(LabWallet.lab_id == lab_id))
     wallet = res.scalar_one_or_none()
 

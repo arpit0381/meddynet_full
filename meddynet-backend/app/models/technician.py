@@ -30,9 +30,7 @@ class Technician(Base):
     phone = Column(String(15), unique=True, nullable=False)
     vehicle = Column(String(50), nullable=True)
     profile_image_url = Column(String(500), nullable=True)
-    city = Column(
-        String(100), nullable=True
-    )  # FIX 9: Added missing city column referenced by admin_portal
+    city = Column(String(100), nullable=True)  # FIX 9: Added missing city column referenced by admin_portal
 
     shift = Column(Enum(ShiftType), nullable=False)
     status = Column(Enum(TechnicianStatus), default=TechnicianStatus.off_duty)

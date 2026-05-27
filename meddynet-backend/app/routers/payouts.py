@@ -79,13 +79,9 @@ async def approve_payout(
     lab = l_res.scalar_one()
 
     # Use lab's bank account or fall back with a clear error
-    bank_account_id = getattr(lab, "razorpay_account_id", None) or getattr(
-        lab, "bank_account_number", None
-    )
+    bank_account_id = getattr(lab, "razorpay_account_id", None) or getattr(lab, "bank_account_number", None)
     if not bank_account_id:
-        logger.warning(
-            f"Lab {lab.id} has no bank account configured. Payout will be simulated."
-        )
+        logger.warning(f"Lab {lab.id} has no bank account configured. Payout will be simulated.")
         bank_account_id = f"simulated_acc_{lab.id}"
 
     # 3. Execute payout via PaymentService

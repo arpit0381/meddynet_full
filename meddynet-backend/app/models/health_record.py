@@ -12,9 +12,7 @@ class HealthRecord(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
 
     title = Column(String(200), nullable=False)
-    record_type = Column(
-        String(50), default="prescription"
-    )  # prescription, report, scan, other
+    record_type = Column(String(50), default="prescription")  # prescription, report, scan, other
 
     file_url = Column(Text, nullable=False)
     file_path = Column(String(200), nullable=True)  # Cloud storage path
@@ -26,6 +24,4 @@ class HealthRecord(Base):
     # Store AI extracted suggestions or other test data
     metadata_json = Column(JSON, default=lambda: {})
 
-    created_at = Column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

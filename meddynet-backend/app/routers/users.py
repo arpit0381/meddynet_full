@@ -16,12 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_my_profile(
-    current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
-    result = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+async def get_my_profile(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -34,9 +30,7 @@ async def update_my_profile(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -64,9 +58,7 @@ async def upload_my_avatar(
     if not url:
         raise HTTPException(status_code=500, detail="Failed to upload image")
 
-    res = await db.execute(
-        select(User).filter(User.id == uuid.UUID(current_user["sub"]))
-    )
+    res = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = res.scalar_one_or_none()
     if user:
         user.profile_image_url = url

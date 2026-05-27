@@ -49,11 +49,7 @@ class UserResponse(BaseModel):
         """Dynamically calculate age from date of birth."""
         if self.dob:
             today = date.today()
-            age = (
-                today.year
-                - self.dob.year
-                - ((today.month, today.day) < (self.dob.month, self.dob.day))
-            )
+            age = today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
             self.age = str(age)
         return self
 

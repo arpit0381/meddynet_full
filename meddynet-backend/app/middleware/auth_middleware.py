@@ -23,9 +23,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     request.state.user = None
                 else:
                     # 2. Decode and verify payload
-                    payload = jwt.decode(
-                        token, settings.JWT_SECRET_KEY, algorithms=["HS256"]
-                    )
+                    payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
 
                     # 3. Security Hardening: Direct is_active Enforcement
                     # If is_active is encoded in JWT, we can skip DB hit for performance
@@ -52,9 +50,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Log critical status codes (best-effort, non-blocking)
         if response.status_code >= 400:
             try:
-                user_id = (
-                    request.state.user.get("sub") if request.state.user else "anonymous"
-                )
+                user_id = request.state.user.get("sub") if request.state.user else "anonymous"
                 await mongo_service.log_event(
                     level="error" if response.status_code >= 500 else "warning",
                     event="http_error",

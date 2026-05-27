@@ -124,9 +124,7 @@ async def test_lab_functionality():
             session.add(payment)
 
             # Update Lab Wallet
-            wallet_res = await session.execute(
-                select(LabWallet).filter(LabWallet.lab_id == lab_id)
-            )
+            wallet_res = await session.execute(select(LabWallet).filter(LabWallet.lab_id == lab_id))
             wallet = wallet_res.scalar_one_or_none()
             if not wallet:
                 wallet = LabWallet(lab_id=lab_id, pending_balance=0, total_earned=0)
@@ -158,9 +156,7 @@ async def test_lab_functionality():
                 )
             )
             total_revenue = revenue_res.scalar() or 0
-            print(
-                f"  [VERIFY] Total Revenue: ₹{total_revenue/100:.2f} (Expected: ₹{lab_amt/100:.2f})"
-            )
+            print(f"  [VERIFY] Total Revenue: ₹{total_revenue/100:.2f} (Expected: ₹{lab_amt/100:.2f})")
 
             if total_revenue == lab_amt:
                 print("  [SUCCESS] Stats logic matches data.")
@@ -191,17 +187,11 @@ async def test_lab_functionality():
 
             with open(pdf_path, "rb") as f:
                 content = f.read()
-                mock_file = UploadFile(
-                    filename="test_report.pdf", file=io.BytesIO(content)
-                )
-                result = await storage_service.upload_report(
-                    mock_file, str(user_id), str(booking_id)
-                )
+                mock_file = UploadFile(filename="test_report.pdf", file=io.BytesIO(content))
+                result = await storage_service.upload_report(mock_file, str(user_id), str(booking_id))
 
                 if result and result.get("url"):
-                    print(
-                        f"  [OK] Report uploaded to Supabase. URL: {result['url'][:50]}..."
-                    )
+                    print(f"  [OK] Report uploaded to Supabase. URL: {result['url'][:50]}...")
                 else:
                     print(f"  [FAIL] Report upload failed: {result}")
 

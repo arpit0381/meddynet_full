@@ -46,9 +46,7 @@ async def create_order(
             f"Payment initiation failed for booking {payload.booking_id}: {e}",
             exc_info=True,
         )
-        raise HTTPException(
-            status_code=500, detail="Payment integration error. Please try again."
-        )
+        raise HTTPException(status_code=500, detail="Payment integration error. Please try again.")
 
     new_payment = Payment(
         booking_id=booking.id,
@@ -95,9 +93,7 @@ async def create_deposit(
         rp_order = await payment_service.initiate_payment(payload.amount)
     except Exception as e:
         logger.error(f"Deposit order creation failed: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail="Payment integration error. Please try again."
-        )
+        raise HTTPException(status_code=500, detail="Payment integration error. Please try again.")
 
     new_payment = Payment(
         user_id=uuid.UUID(current_user["sub"]),
@@ -130,9 +126,7 @@ async def verify_payment(payload: PaymentVerify, db: AsyncSession = Depends(get_
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid payment signature")
 
-    res = await db.execute(
-        select(Payment).filter(Payment.razorpay_order_id == payload.razorpay_order_id)
-    )
+    res = await db.execute(select(Payment).filter(Payment.razorpay_order_id == payload.razorpay_order_id))
     payment = res.scalar_one_or_none()
 
     if not payment or payment.status == PaymentStatus.paid:
@@ -142,9 +136,7 @@ async def verify_payment(payload: PaymentVerify, db: AsyncSession = Depends(get_
     payment.status = PaymentStatus.paid
 
     if payment.booking_id:
-        b_res = await db.execute(
-            select(Booking).filter(Booking.id == payment.booking_id)
-        )
+        b_res = await db.execute(select(Booking).filter(Booking.id == payment.booking_id))
         booking = b_res.scalar_one()
         booking.status = BookingStatus.confirmed
         await update_lab_wallet_on_payment(
@@ -182,14 +174,10 @@ async def verify_payment(payload: PaymentVerify, db: AsyncSession = Depends(get_
 
 
 @router.get("/me")
-async def get_my_payments(
-    current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)
-):
+async def get_my_payments(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Fetch all payments for the logged-in user."""
     result = await db.execute(
-        select(Payment)
-        .filter(Payment.user_id == uuid.UUID(current_user["sub"]))
-        .order_by(Payment.created_at.desc())
+        select(Payment).filter(Payment.user_id == uuid.UUID(current_user["sub"])).order_by(Payment.created_at.desc())
     )
     payments = result.scalars().all()
     return [

@@ -39,16 +39,8 @@ class ConnectionManager:
     async def _listen_to_redis(self):
         async for message in self.pubsub.listen():
             if message["type"] == "message":
-                channel = (
-                    message["channel"].decode()
-                    if isinstance(message["channel"], bytes)
-                    else message["channel"]
-                )
-                data = (
-                    message["data"].decode()
-                    if isinstance(message["data"], bytes)
-                    else message["data"]
-                )
+                channel = message["channel"].decode() if isinstance(message["channel"], bytes) else message["channel"]
+                data = message["data"].decode() if isinstance(message["data"], bytes) else message["data"]
 
                 # Forward to all local websockets listening to this channel
                 if channel in self.active_connections:
@@ -97,9 +89,7 @@ async def websocket_endpoint(websocket: WebSocket, client_type: str, client_id: 
                     from sqlalchemy.future import select
 
                     async with SessionLocal() as db:
-                        res = await db.execute(
-                            select(Booking).filter(Booking.id == ticket_id)
-                        )
+                        res = await db.execute(select(Booking).filter(Booking.id == ticket_id))
                         booking = res.scalar_one_or_none()
                         if booking:
                             forward_payload = {
@@ -110,9 +100,7 @@ async def websocket_endpoint(websocket: WebSocket, client_type: str, client_id: 
                                 "booking_id": str(booking.id),
                                 "text": payload.get("text", ""),
                             }
-                            await manager.broadcast(
-                                f"lab:{booking.lab_id}", forward_payload
-                            )
+                            await manager.broadcast(f"lab:{booking.lab_id}", forward_payload)
             elif event_type == "message" and client_type == "lab":
                 receiver_id = payload.get("receiver_id")
                 if receiver_id:

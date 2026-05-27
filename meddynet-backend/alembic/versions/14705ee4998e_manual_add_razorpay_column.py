@@ -21,9 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     # Check if column exists first to avoid error if it was partially created
     # But in Alembic, we usually just run the add_column
-    op.add_column(
-        "labs", sa.Column("razorpay_account_id", sa.String(length=50), nullable=True)
-    )
+    op.add_column("labs", sa.Column("razorpay_account_id", sa.String(length=50), nullable=True))
 
 
 def downgrade() -> None:

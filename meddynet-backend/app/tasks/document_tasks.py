@@ -41,15 +41,9 @@ async def async_extract_metadata(document_id: str, filename: str, content_type: 
     # ── Category Detection ──
     if any(kw in name_lower for kw in ["prescription", "rx", "presc"]):
         metadata["extracted"]["category"] = "Prescription"
-    elif any(
-        kw in name_lower
-        for kw in ["scan", "xray", "x-ray", "mri", "ct", "ultrasound", "usg"]
-    ):
+    elif any(kw in name_lower for kw in ["scan", "xray", "x-ray", "mri", "ct", "ultrasound", "usg"]):
         metadata["extracted"]["category"] = "Scan"
-    elif any(
-        kw in name_lower
-        for kw in ["report", "lab", "test", "blood", "cbc", "thyroid", "lipid"]
-    ):
+    elif any(kw in name_lower for kw in ["report", "lab", "test", "blood", "cbc", "thyroid", "lipid"]):
         metadata["extracted"]["category"] = "Lab Report"
     else:
         metadata["extracted"]["category"] = "Other"
@@ -122,9 +116,7 @@ async def async_extract_metadata(document_id: str, filename: str, content_type: 
 
 
 @celery_app.task
-def process_uploaded_document(
-    document_id: str, filename: str, content_type: str = "application/pdf"
-):
+def process_uploaded_document(document_id: str, filename: str, content_type: str = "application/pdf"):
     """
     Celery task to process an uploaded document in the background.
     Called when a user uploads a file to the Safe Vault.

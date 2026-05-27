@@ -23,18 +23,14 @@ async def test_send_otp_invalid_phone(client):
 @pytest.mark.asyncio
 async def test_verify_otp_wrong_otp(client):
     """Verify OTP with wrong code should return 400/401."""
-    response = await client.post(
-        "/auth/verify-otp", json={"phone": "+919876543210", "otp": "000000"}
-    )
+    response = await client.post("/auth/verify-otp", json={"phone": "+919876543210", "otp": "000000"})
     assert response.status_code in [400, 401]
 
 
 @pytest.mark.asyncio
 async def test_refresh_token_invalid(client):
     """Refresh with invalid token should return 401."""
-    response = await client.post(
-        "/auth/refresh", json={"refresh_token": "invalid_token_here"}
-    )
+    response = await client.post("/auth/refresh", json={"refresh_token": "invalid_token_here"})
     assert response.status_code in [401, 422]
 
 

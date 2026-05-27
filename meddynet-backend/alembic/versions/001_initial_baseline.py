@@ -32,12 +32,8 @@ def upgrade() -> None:
         sa.Column("hashed_password", sa.String(length=255), nullable=True),
         sa.Column("profile_image_url", sa.String(length=500), nullable=True),
         sa.Column("is_active", sa.Boolean(), server_default="true"),
-        sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")
-        ),
-        sa.Column(
-            "updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()")
-        ),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()")),
     )
 
     # 2. Labs Table
@@ -54,9 +50,7 @@ def upgrade() -> None:
         sa.Column("is_verified", sa.Boolean(), server_default="false"),
         sa.Column("sample_collection_fee", sa.Integer(), server_default="0"),
         sa.Column("platform_commission_pct", sa.Float(), server_default="10.0"),
-        sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")
-        ),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")),
     )
 
     # 3. Lab Tests Table
@@ -108,9 +102,7 @@ def upgrade() -> None:
         sa.Column("patient_name", sa.String(length=100), nullable=False),
         sa.Column("patient_phone", sa.String(length=15), nullable=False),
         sa.Column("total_amount", sa.Integer(), nullable=False),
-        sa.Column(
-            "created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")
-        ),
+        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()")),
     )
 
     # 6. Reports Table
@@ -123,9 +115,7 @@ def upgrade() -> None:
             sa.ForeignKey("bookings.id", ondelete="CASCADE"),
         ),
         sa.Column("file_url", sa.String(length=500), nullable=False),
-        sa.Column(
-            "uploaded_at", sa.DateTime(timezone=True), server_default=sa.text("now()")
-        ),
+        sa.Column("uploaded_at", sa.DateTime(timezone=True), server_default=sa.text("now()")),
         sa.Column("is_analyzed", sa.Boolean(), server_default="false"),
     )
 

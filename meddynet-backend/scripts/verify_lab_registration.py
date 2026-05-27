@@ -58,13 +58,9 @@ async def test_lab_registration():
             from app.models.lab import Lab
             from sqlalchemy import select
 
-            res = await db.execute(
-                select(Lab).filter(Lab.id == response["user"].lab_id)
-            )
+            res = await db.execute(select(Lab).filter(Lab.id == response["user"].lab_id))
             lab = res.scalar_one()
-            print(
-                f"  [OK] Lab Verification Status: {lab.is_verified} (Expected: False)"
-            )
+            print(f"  [OK] Lab Verification Status: {lab.is_verified} (Expected: False)")
 
             await db.commit()
         except Exception as e:

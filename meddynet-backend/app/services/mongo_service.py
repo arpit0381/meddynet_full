@@ -92,29 +92,19 @@ class MongoService:
 
     async def get_user_notifications(self, user_id: str, limit: int = 20):
         try:
-            cursor = (
-                self.notifications.find({"user_id": user_id})
-                .sort("created_at", -1)
-                .limit(limit)
-            )
+            cursor = self.notifications.find({"user_id": user_id}).sort("created_at", -1).limit(limit)
             return await cursor.to_list(length=limit)
         except Exception as e:
-            logger.error(
-                f"Failed to fetch notifications (MongoDB might be blocked): {e}"
-            )
+            logger.error(f"Failed to fetch notifications (MongoDB might be blocked): {e}")
             return []
 
     async def mark_notification_as_read(self, notification_id: str):
         from bson import ObjectId
 
-        await self.notifications.update_one(
-            {"_id": ObjectId(notification_id)}, {"$set": {"is_read": True}}
-        )
+        await self.notifications.update_one({"_id": ObjectId(notification_id)}, {"$set": {"is_read": True}})
 
     # --- Logs ---
-    async def log_event(
-        self, level: str, event: str, message: str, context: Dict[str, Any] = None
-    ):
+    async def log_event(self, level: str, event: str, message: str, context: Dict[str, Any] = None):
         try:
             log_entry = {
                 "level": level,  # info, warning, error, critical

@@ -29,9 +29,7 @@ async def verify_everything_direct():
         count = await mongo_service.logs.count_documents({})
         print(f"✅ MONGODB: Healthy (Log Count: {count})")
     except Exception as e:
-        print(
-            f"❌ MONGODB: Failed! (SSL handshakes typically fail here on Windows if certifi is missing) {e}"
-        )
+        print(f"❌ MONGODB: Failed! (SSL handshakes typically fail here on Windows if certifi is missing) {e}")
 
     # 3. Supabase Storage
     print(f"\n[Phase 3] Supabase Storage Check...")

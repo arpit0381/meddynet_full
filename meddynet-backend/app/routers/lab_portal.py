@@ -37,9 +37,7 @@ class LabUpdate(BaseModel):
 router = APIRouter(tags=["lab-portal"])
 
 
-async def get_current_lab_id(
-    current_user: dict = Depends(require_role(["lab_admin", "lab_staff"]))
-) -> uuid.UUID:
+async def get_current_lab_id(current_user: dict = Depends(require_role(["lab_admin", "lab_staff"]))) -> uuid.UUID:
     lab_id_str = current_user.get("lab_id")
     if not lab_id_str:
         raise HTTPException(status_code=403, detail="User not associated with any lab")
@@ -51,9 +49,7 @@ async def get_current_lab_id(
 
 @router.get("/labs/me")
 @router.get("/labs/me/")
-async def get_my_lab(
-    lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)
-):
+async def get_my_lab(lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)):
     res = await db.execute(select(Lab).filter(Lab.id == lab_id))
     lab = res.scalar_one_or_none()
     if not lab:
@@ -81,9 +77,7 @@ async def update_my_lab(
 
 
 @router.get("/labs/me/stats")
-async def get_lab_stats(
-    lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)
-):
+async def get_lab_stats(lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)):
     # 1. Get Lab
     lab_res = await db.execute(select(Lab).filter(Lab.id == lab_id))
     lab = lab_res.scalar_one_or_none()
@@ -93,23 +87,17 @@ async def get_lab_stats(
 
     # 2. Calculate Revenue (Sum of paid payments)
     revenue_res = await db.execute(
-        select(func.sum(Payment.lab_amount)).filter(
-            Payment.lab_id == lab.id, Payment.status == PaymentStatus.paid
-        )
+        select(func.sum(Payment.lab_amount)).filter(Payment.lab_id == lab.id, Payment.status == PaymentStatus.paid)
     )
     total_revenue = revenue_res.scalar() or 0
 
     # 3. Total Bookings
-    bookings_count_res = await db.execute(
-        select(func.count(Booking.id)).filter(Booking.lab_id == lab.id)
-    )
+    bookings_count_res = await db.execute(select(func.count(Booking.id)).filter(Booking.lab_id == lab.id))
     total_bookings = bookings_count_res.scalar() or 0
 
     # 4. New Patients (Unique users)
     patients_count_res = await db.execute(
-        select(func.count(func.distinct(Booking.user_id))).filter(
-            Booking.user_id != None, Booking.lab_id == lab.id
-        )
+        select(func.count(func.distinct(Booking.user_id))).filter(Booking.user_id != None, Booking.lab_id == lab.id)
     )
     total_patients = patients_count_res.scalar() or 0
 
@@ -134,9 +122,7 @@ async def get_lab_stats(
             p["value"] = int((p["value"] / total_p) * 100)
 
     # 6. Fleet Stats
-    tech_count_res = await db.execute(
-        select(func.count(Technician.id)).filter(Technician.lab_id == lab_id)
-    )
+    tech_count_res = await db.execute(select(func.count(Technician.id)).filter(Technician.lab_id == lab_id))
     total_techs = tech_count_res.scalar() or 0
     active_tech_count_res = await db.execute(
         select(func.count(Technician.id)).filter(
@@ -146,9 +132,7 @@ async def get_lab_stats(
     active_techs = active_tech_count_res.scalar() or 0
 
     # 7. Active Tests Count
-    tests_count_res = await db.execute(
-        select(func.count(LabTest.id)).filter(LabTest.lab_id == lab_id)
-    )
+    tests_count_res = await db.execute(select(func.count(LabTest.id)).filter(LabTest.lab_id == lab_id))
     active_tests = tests_count_res.scalar() or 0
 
     return {
@@ -189,46 +173,29 @@ async def get_lab_stats(
 
 
 @router.get("/labs/me/earnings")
-async def get_lab_earnings(
-    lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)
-):
+async def get_lab_earnings(lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)):
     wallet_res = await db.execute(select(LabWallet).filter(LabWallet.lab_id == lab_id))
     wallet = wallet_res.scalar_one_or_none()
 
     ledger_res = await db.execute(
-        select(Ledger)
-        .filter(Ledger.lab_id == lab_id)
-        .order_by(Ledger.created_at.desc())
-        .limit(20)
+        select(Ledger).filter(Ledger.lab_id == lab_id).order_by(Ledger.created_at.desc()).limit(20)
     )
     ledger = ledger_res.scalars().all()
 
     return {
         "wallet": {
-            "balance": (
-                wallet.pending_balance if wallet and wallet.pending_balance else 0
-            ),
-            "pending_balance": (
-                wallet.pending_balance if wallet and wallet.pending_balance else 0
-            ),
-            "pending_payout": (
-                wallet.pending_balance if wallet and wallet.pending_balance else 0
-            ),
-            "total_earned": (
-                wallet.total_earned if wallet and wallet.total_earned else 0
-            ),
-            "total_paid_out": (
-                wallet.total_paid_out if wallet and wallet.total_paid_out else 0
-            ),
+            "balance": (wallet.pending_balance if wallet and wallet.pending_balance else 0),
+            "pending_balance": (wallet.pending_balance if wallet and wallet.pending_balance else 0),
+            "pending_payout": (wallet.pending_balance if wallet and wallet.pending_balance else 0),
+            "total_earned": (wallet.total_earned if wallet and wallet.total_earned else 0),
+            "total_paid_out": (wallet.total_paid_out if wallet and wallet.total_paid_out else 0),
         },
         "ledger": ledger if ledger else [],
     }
 
 
 @router.get("/labs/me/bookings")
-async def get_lab_bookings(
-    lab_id: uuid.UUID = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)
-):
+async def get_lab_bookings(lab_id: uuid.UUID = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)):
     from sqlalchemy.orm import selectinload
     from app.models.booking import BookingTest
     from app.models.report import Report
@@ -258,36 +225,19 @@ async def get_lab_bookings(
         test_names_map.setdefault(row[0], []).append(row[1])
 
     # Batch fetch: all payment statuses for these bookings
-    pay_res = await db.execute(
-        select(Payment.booking_id, Payment.status).filter(
-            Payment.booking_id.in_(booking_ids)
-        )
-    )
-    payment_map = {
-        row[0]: row[1].value if hasattr(row[1], "value") else str(row[1])
-        for row in pay_res.all()
-    }
+    pay_res = await db.execute(select(Payment.booking_id, Payment.status).filter(Payment.booking_id.in_(booking_ids)))
+    payment_map = {row[0]: row[1].value if hasattr(row[1], "value") else str(row[1]) for row in pay_res.all()}
 
     # Batch fetch: all reports for these bookings
-    report_res = await db.execute(
-        select(Report.booking_id, Report.id).filter(Report.booking_id.in_(booking_ids))
-    )
+    report_res = await db.execute(select(Report.booking_id, Report.id).filter(Report.booking_id.in_(booking_ids)))
     report_map = {row[0]: str(row[1]) for row in report_res.all()}
 
     # Build response in Python (no more per-booking DB hits)
     enriched = []
     for booking in bookings:
         test_names = test_names_map.get(booking.id, [])
-        b_type = (
-            getattr(booking.type, "value", str(booking.type))
-            if booking.type
-            else "home_collection"
-        )
-        b_status = (
-            getattr(booking.status, "value", str(booking.status))
-            if booking.status
-            else "pending"
-        )
+        b_type = getattr(booking.type, "value", str(booking.type)) if booking.type else "home_collection"
+        b_status = getattr(booking.status, "value", str(booking.status)) if booking.status else "pending"
         p_status = payment_map.get(booking.id, "pending")
 
         enriched.append(
@@ -301,17 +251,11 @@ async def get_lab_bookings(
                 "type": b_type,
                 "status": b_status,
                 "payment_status": p_status,
-                "scheduled_at": (
-                    booking.scheduled_at.isoformat() if booking.scheduled_at else None
-                ),
+                "scheduled_at": (booking.scheduled_at.isoformat() if booking.scheduled_at else None),
                 "address": booking.address,
-                "created_at": (
-                    booking.created_at.isoformat() if booking.created_at else None
-                ),
+                "created_at": (booking.created_at.isoformat() if booking.created_at else None),
                 "total_amount": booking.total_amount,
-                "test_name": (
-                    " + ".join(test_names) if test_names else "Diagnostic Test"
-                ),
+                "test_name": (" + ".join(test_names) if test_names else "Diagnostic Test"),
                 "report_id": report_map.get(booking.id),
                 "items": [{"name": n} for n in test_names],
             }
@@ -328,17 +272,13 @@ async def assign_technician_to_booking(
     db: AsyncSession = Depends(get_db),
 ):
     # 1. Fetch Booking and verify it belongs to this lab
-    res_b = await db.execute(
-        select(Booking).filter(Booking.id == booking_id, Booking.lab_id == lab_id)
-    )
+    res_b = await db.execute(select(Booking).filter(Booking.id == booking_id, Booking.lab_id == lab_id))
     booking = res_b.scalar_one_or_none()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found for this lab")
 
     # 2. Fetch Technician and verify they belong to this lab
-    res_t = await db.execute(
-        select(Technician).filter(Technician.id == tech_id, Technician.lab_id == lab_id)
-    )
+    res_t = await db.execute(select(Technician).filter(Technician.id == tech_id, Technician.lab_id == lab_id))
     tech = res_t.scalar_one_or_none()
     if not tech:
         raise HTTPException(status_code=404, detail="Technician not found for this lab")
@@ -363,16 +303,12 @@ async def assign_technician_to_booking(
     except Exception as e:
         import logging
 
-        logging.getLogger(__name__).error(
-            f"Failed to create notification for booking {booking_id}: {e}"
-        )
+        logging.getLogger(__name__).error(f"Failed to create notification for booking {booking_id}: {e}")
     return {"message": "Technician assigned successfully", "tech_name": tech.name}
 
 
 @router.get("/labs/me/tests")
-async def get_lab_tests(
-    lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)
-):
+async def get_lab_tests(lab_id: str = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(LabTest).filter(LabTest.lab_id == lab_id))
     return result.scalars().all()
 
@@ -396,9 +332,7 @@ class TechCreate(BaseModel):
 
 
 @router.get("/labs/me/technicians")
-async def get_lab_technicians(
-    lab_id: uuid.UUID = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)
-):
+async def get_lab_technicians(lab_id: uuid.UUID = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Technician).filter(Technician.lab_id == lab_id))
     return result.scalars().all()
 
@@ -420,9 +354,7 @@ async def onboard_technician(
         phone=data.phone,
         email=data.email,
         role="technician",
-        hashed_password=get_password_hash(
-            data.password if data.password else __import__("secrets").token_urlsafe(12)
-        ),
+        hashed_password=get_password_hash(data.password if data.password else __import__("secrets").token_urlsafe(12)),
         lab_id=lab_id,
         is_active=True,
     )
@@ -471,9 +403,7 @@ async def toggle_test_status(
     lab_id: str = Depends(get_current_lab_id),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(LabTest).filter(LabTest.id == test_id, LabTest.lab_id == lab_id)
-    )
+    result = await db.execute(select(LabTest).filter(LabTest.id == test_id, LabTest.lab_id == lab_id))
     test = result.scalar_one_or_none()
     if not test:
         raise HTTPException(status_code=404, detail="Test not found")
@@ -489,18 +419,12 @@ async def toggle_tech_status(
     lab_id: str = Depends(get_current_lab_id),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(
-        select(Technician).filter(Technician.id == tech_id, Technician.lab_id == lab_id)
-    )
+    result = await db.execute(select(Technician).filter(Technician.id == tech_id, Technician.lab_id == lab_id))
     tech = result.scalar_one_or_none()
     if not tech:
         raise HTTPException(status_code=404, detail="Technician not found")
 
-    tech.status = (
-        TechnicianStatus.off_duty
-        if tech.status == TechnicianStatus.on_duty
-        else TechnicianStatus.on_duty
-    )
+    tech.status = TechnicianStatus.off_duty if tech.status == TechnicianStatus.on_duty else TechnicianStatus.on_duty
     await db.commit()
     return {"status": tech.status.value}
 
