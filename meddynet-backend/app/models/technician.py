@@ -1,8 +1,7 @@
 import enum
 import uuid
 
-from sqlalchemy import Boolean, Column, Enum, Float, ForeignKey, String
-from sqlalchemy import Uuid
+from sqlalchemy import Boolean, Column, Enum, Float, ForeignKey, String, Uuid
 
 from app.database import Base
 

@@ -1,8 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Text
-from sqlalchemy import Uuid
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Text, Uuid
 
 from app.database import Base
 

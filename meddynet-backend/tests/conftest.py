@@ -29,8 +29,8 @@ def app():
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
     """Create database tables before running tests."""
-    from app.database import engine, Base
     import app.models  # Ensure models are imported
+    from app.database import Base, engine
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
