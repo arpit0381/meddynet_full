@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #00A86B;
+  --color-primary-light: #00c97a;
+  --color-primary-dark: #008f5a;
+  --color-accent: #1E88E5;
+  --color-accent-light: #42a5f5;
+  --color-dark: #0F172A;
+  --color-dark-light: #1a1a2e;
+  --color-surface: #F7FBFF;
+  --color-surface-white: #ffffff;
+  --color-text: #2C3E50;
+  --color-text-secondary: #546e7a;
+  --color-text-muted: #78909c;
+  --color-text-light: #94a3b8;
+  --color-border: #eef2f7;
+  --color-border-dark: #e0e7ee;
+  --color-star: #f9a825;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+}
+
+/* ===== Base Styles ===== */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  background: #ffffff;
+  color: var(--color-text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #00A86B, #1E88E5);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00A86B;
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: rgba(0, 168, 107, 0.18);
+  color: #1a1a2e;
+}
+
+/* ===== Gradient Utilities ===== */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--color-primary), var(--accent));
+}
+
+.gradient-dark {
+  background: linear-gradient(135deg, var(--color-dark), #1e293b);
+}
+
+.gradient-hero {
+  background: radial-gradient(ellipse at 70% 0%, rgba(0,168,107,0.10) 0%, transparent 55%),
+              radial-gradient(ellipse at 10% 100%, rgba(30,136,229,0.08) 0%, transparent 55%),
+              #ffffff;
+}
+
+/* ===== Glass Effect ===== */
+.glass {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ===== Animations ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-16px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.5); }
+  100% { box-shadow: 0 0 0 14px rgba(0, 168, 107, 0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 168, 107, 0.3); }
+  50% { box-shadow: 0 0 50px rgba(0, 168, 107, 0.6); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

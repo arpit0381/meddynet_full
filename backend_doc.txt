@@ -1,0 +1,1290 @@
+MEDDYNET
+Complete Backend Architecture & Developer Documentation
+Version 1.0.0  •  FastAPI + NeonDB + Supabase + Razorpay + Redis
+April 2026
+api.meddynet.com
+Table of Contents
+1. System Overview ............. 3
+2. Tech Stack ............. 4
+3. Project Structure ............. 5
+4. Authentication & Authorization ............. 6
+5. Database Schema (NeonDB / PostgreSQL) ............. 8
+6. API Reference — All Endpoints ............. 11
+7. Payment & Wallet System ............. 16
+8. Real-Time Layer (WebSocket) ............. 19
+9. Background Jobs (Celery + Redis) ............. 20
+10. File Storage (Cloudinary) ............. 21
+11. Analytics Layer (MongoDB) ............. 22
+12. Environment Variables ............. 23
+13. Setup & Installation ............. 24
+14. Deployment Architecture ............. 25
+15. Security Checklist ............. 26
+16. Scalability Roadmap ............. 27
+1. SYSTEM OVERVIEW
+MeddyNet is a diagnostic lab discovery, booking, and logistics platform. The backend serves four distinct frontend applications — User App, Lab Partner Portal, Technician PWA, and Admin Dashboard — over a single FastAPI REST API, with a dedicated WebSocket server for real-time events.
+Architecture at a Glance
+Layer
+Technology
+Role
+Client
+4x Next.js 16 apps
+User, Lab, Technician, Admin frontends
+CDN / Security
+Cloudflare
+DDoS, WAF, SSL termination, rate limiting
+API Gateway
+FastAPI (Python 3.12)
+All REST endpoints — api.meddynet.com/v1
+Primary DB
+NeonDB (PostgreSQL)
+Core relational data — bookings, users, labs
+Auth
+Supabase Auth
+OTP login, JWT sessions, refresh tokens
+Payments
+Razorpay
+Orders, verification, refunds, payouts
+File Storage
+Cloudinary
+PDF reports, prescriptions, lab images
+Cache / Queue
+Redis (Upstash)
+API caching, Celery job queue, pub/sub
+Analytics / Logs
+MongoDB Atlas
+Audit logs, event analytics, notification history
+Real-time
+WebSocket (FastAPI)
+Location updates, job dispatch, notifications
+Background Jobs
+Celery + Redis
+Payouts, OTP retry, reminders, report delivery
+The Four Frontend Consumers
+App
+Primary Users
+Key API Modules
+User App (meddynet.com)
+Patients
+auth, labs, tests, bookings, reports, payments, notifications
+Lab Partner Portal
+Lab admins
+auth, labs, bookings, technicians, reports, earnings, profile
+Technician PWA
+Phlebotomists
+auth, jobs, technicians, checklist, location
+Admin Dashboard
+Internal team
+admin/*, analytics, all modules (superadmin JWT)
+2. TECH STACK
+Package
+Version
+Purpose
+fastapi
+^0.115
+ASGI framework for all REST and WebSocket routes
+uvicorn
+^0.30
+ASGI server (Gunicorn in prod with multiple workers)
+python
+3.12
+Core language
+sqlalchemy
+^2.0
+ORM for PostgreSQL (async with asyncpg)
+asyncpg
+^0.29
+Async PostgreSQL driver for NeonDB
+alembic
+^1.13
+Database migrations
+pydantic
+v2
+Request/response validation, settings management
+python-jose
+^3.3
+JWT encoding/decoding (HS256)
+supabase-py
+^2.4
+Supabase Auth SDK — OTP trigger and verify
+razorpay
+^1.4
+Razorpay Python SDK — orders, refunds, payouts
+cloudinary
+^1.40
+Cloudinary SDK — file upload, URL generation
+redis
+^5.0
+Redis client for caching and Celery broker
+celery
+^5.4
+Distributed task queue for background jobs
+motor
+^3.4
+Async MongoDB driver for analytics/logs
+httpx
+^0.27
+Async HTTP client for external API calls
+python-multipart
+^0.0.9
+File upload handling
+slowapi
+^0.1
+Rate limiting middleware for FastAPI
+python-dotenv
+^1.0
+Environment variable management
+3. PROJECT STRUCTURE
+meddynet-backend/
+├── app/
+│   ├── main.py              # FastAPI app factory, middleware, routers
+│   ├── config.py            # Settings (pydantic BaseSettings, .env)
+│   ├── database.py          # SQLAlchemy async engine + session factory
+│   ├── websocket.py         # WebSocket server + Redis pub/sub
+│   │
+│   ├── models/              # SQLAlchemy ORM models
+│   │   ├── user.py          # User, Address
+│   │   ├── lab.py           # Lab, LabTest, LabHours
+│   │   ├── booking.py       # Booking, BookingTest
+│   │   ├── technician.py    # Technician, TechLocation
+│   │   ├── payment.py       # Payment, LabWallet, Ledger, Payout
+│   │   ├── report.py        # Report, ReportParameter
+│   │   ├── notification.py  # Notification
+│   │   └── review.py        # Review
+│   │
+│   ├── schemas/             # Pydantic v2 request/response schemas
+│   │   └── (mirrors models/ structure)
+│   │
+│   ├── routers/             # FastAPI route modules
+│   │   ├── auth.py          # /auth/*
+│   │   ├── users.py         # /users/*
+│   │   ├── labs.py          # /labs/*
+│   │   ├── bookings.py      # /bookings/*
+│   │   ├── technicians.py   # /technicians/*
+│   │   ├── payments.py      # /payments/*
+│   │   ├── reports.py       # /reports/*
+│   │   ├── notifications.py # /notifications/*
+│   │   ├── admin.py         # /admin/* (superadmin only)
+│   │   └── webhooks.py      # /webhooks/razorpay
+│   │
+│   ├── services/            # Business logic layer
+│   │   ├── auth_service.py
+│   │   ├── booking_service.py
+│   │   ├── payment_service.py
+│   │   ├── wallet_service.py
+│   │   ├── report_service.py
+│   │   └── notification_service.py
+│   │
+│   ├── tasks/               # Celery task definitions
+│   │   ├── payout_tasks.py
+│   │   ├── notification_tasks.py
+│   │   └── report_tasks.py
+│   │
+│   └── middleware/
+│       ├── auth_middleware.py  # JWT decode, inject user context
+│       └── rbac.py            # Role-based access control decorators
+│
+├── alembic/                 # DB migration scripts
+├── tests/                   # pytest test suite
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+└── .env.example
+4. AUTHENTICATION & AUTHORIZATION
+MeddyNet uses phone-number OTP login via Supabase Auth. No username/password. After OTP verification, the backend issues its own short-lived JWT (access token) and a longer-lived refresh token stored in an HTTP-only cookie.
+OTP Login Flow
+Step
+Action
+Details
+1
+POST /auth/send-otp
+Client sends { phone: '+919876543210' }. Backend calls Supabase auth.sign_in_with_otp(). Supabase triggers SMS via MSG91/Twilio. Rate-limited: 5 OTPs per phone per hour (Redis counter).
+2
+POST /auth/verify-otp
+Client sends { phone, otp }. Backend calls Supabase auth.verify_otp(). On success: fetch/create user in PostgreSQL. Issue JWT + refresh token.
+3
+POST /auth/refresh
+Client sends refresh token. Backend verifies against Redis blacklist. Issues new access token + rotates refresh token.
+4
+POST /auth/logout
+Adds refresh token to Redis blacklist (TTL = token expiry). Clears cookie.
+JWT Payload Structure
+{ "sub": "user-uuid", "role": "user|lab_admin|technician|superadmin",
+  "lab_id": "lab-uuid-or-null", "tech_id": "tech-uuid-or-null",
+  "iat": 1714000000, "exp": 1714000900 }
+Access token expiry: 15 minutes. Refresh token expiry: 7 days (stored in Redis with user_id mapping for server-side revocation).
+RBAC — Role-Based Access Control
+Role
+Assigned To
+Scope
+user
+All patients / end users
+Own bookings, reports, profile, payments
+lab_admin
+Lab partner staff
+Own lab's data — bookings, technicians, reports, earnings
+technician
+Field phlebotomists
+Assigned jobs, location updates, checklist, own profile
+superadmin
+Internal MeddyNet team
+Full access to all data and admin operations
+RBAC is enforced via a FastAPI dependency injected on each protected route:
+from app.middleware.rbac import require_role
+@router.get('/admin/users', dependencies=[Depends(require_role('superadmin'))])
+async def list_users(db: AsyncSession = Depends(get_db)):
+    ...
+Middleware Chain (per request)
+Cloudflare validates SSL + rate limits at edge
+FastAPI CORSMiddleware allows configured origins
+slowapi RateLimitMiddleware (100 req/min per IP globally)
+AuthMiddleware: extracts Bearer token from Authorization header
+JWT decoded via python-jose; user context injected into request.state
+Route handler runs with user_id, role, lab_id, tech_id available
+5. DATABASE SCHEMA (NEONDB / POSTGRESQL)
+All monetary amounts are stored in paise (INR x 100) to avoid floating-point errors. All primary keys are UUID v4. All timestamps are UTC with timezone. The schema is managed via Alembic migrations.
+users
+Column
+Type
+Constraints / Notes
+id
+UUID
+PRIMARY KEY, default gen_random_uuid()
+phone
+VARCHAR(15)
+UNIQUE NOT NULL — Indian format +91XXXXXXXXXX
+name
+VARCHAR(100)
+NOT NULL
+email
+VARCHAR(100)
+NULLABLE, UNIQUE
+blood_group
+VARCHAR(5)
+NULLABLE — A+, B-, O+, AB+, etc.
+dob
+DATE
+NULLABLE
+gender
+VARCHAR(10)
+NULLABLE
+is_active
+BOOLEAN
+DEFAULT TRUE
+created_at
+TIMESTAMPTZ
+DEFAULT NOW()
+updated_at
+TIMESTAMPTZ
+AUTO-UPDATE on change
+labs
+Column
+Type
+Constraints / Notes
+id
+UUID
+PRIMARY KEY
+name
+VARCHAR(200)
+NOT NULL
+slug
+VARCHAR(100)
+UNIQUE NOT NULL — URL-safe identifier
+phone
+VARCHAR(15)
+NOT NULL
+email
+VARCHAR(100)
+NULLABLE
+city
+VARCHAR(100)
+NOT NULL
+address
+TEXT
+NOT NULL
+lat
+FLOAT
+NOT NULL — GPS latitude
+lng
+FLOAT
+NOT NULL — GPS longitude
+is_nabl
+BOOLEAN
+DEFAULT FALSE
+is_iso
+BOOLEAN
+DEFAULT FALSE
+is_verified
+BOOLEAN
+DEFAULT FALSE — admin-verified
+home_collection
+BOOLEAN
+DEFAULT FALSE
+plan
+ENUM
+starter | basic | advanced | premium
+commission_rate
+FLOAT
+DEFAULT 0.15 (15%)
+is_active
+BOOLEAN
+DEFAULT TRUE
+lab_tests
+Column
+Type
+Notes
+id
+UUID
+PRIMARY KEY
+lab_id
+UUID
+FK → labs.id ON DELETE CASCADE
+name
+VARCHAR(200)
+Test name
+category
+VARCHAR(100)
+Hematology, Thyroid, Cardiology, etc.
+price
+INT
+In paise (100 = ₹1)
+mrp
+INT
+Original MRP in paise
+turnaround_hours
+INT
+Estimated report TAT in hours
+home_collection
+BOOLEAN
+Whether home collection is available
+is_active
+BOOLEAN
+DEFAULT TRUE
+bookings
+Column
+Type
+Notes
+id
+UUID
+PRIMARY KEY
+user_id
+UUID
+FK → users.id
+lab_id
+UUID
+FK → labs.id
+tech_id
+UUID
+FK → technicians.id NULLABLE — assigned after booking
+type
+ENUM
+home_collection | lab_visit
+status
+ENUM
+pending | confirmed | assigned | on_the_way | arrived | sample_collected | report_ready | completed | cancelled
+scheduled_at
+TIMESTAMPTZ
+Appointment datetime
+address
+TEXT
+Patient address for home collection
+lat
+FLOAT
+Patient GPS latitude
+lng
+FLOAT
+Patient GPS longitude
+patient_name
+VARCHAR(100)
+May differ from user (family member)
+patient_phone
+VARCHAR(15)
+Contact for technician
+total_amount
+INT
+Sum of all test prices in paise
+promo_code
+VARCHAR(50)
+NULLABLE — applied coupon code
+discount_amount
+INT
+Paise discounted by promo
+notes
+TEXT
+Patient's special instructions
+cancelled_at
+TIMESTAMPTZ
+NULLABLE
+cancel_reason
+TEXT
+NULLABLE
+created_at
+TIMESTAMPTZ
+DEFAULT NOW()
+booking_tests (junction table)
+Column
+Type
+Notes
+id
+UUID
+PRIMARY KEY
+booking_id
+UUID
+FK → bookings.id
+lab_test_id
+UUID
+FK → lab_tests.id
+price_at_booking
+INT
+Snapshot of price at time of booking (paise)
+payments
+Column
+Type
+Notes
+id
+UUID
+PRIMARY KEY
+booking_id
+UUID
+FK → bookings.id UNIQUE (one payment per booking)
+user_id
+UUID
+FK → users.id
+lab_id
+UUID
+FK → labs.id
+razorpay_order_id
+VARCHAR(100)
+UNIQUE — Razorpay order_id
+razorpay_payment_id
+VARCHAR(100)
+UNIQUE NULLABLE — set after capture
+total_amount
+INT
+In paise
+commission_amount
+INT
+Platform fee in paise (default 15%)
+lab_amount
+INT
+Lab's share in paise
+status
+ENUM
+pending | paid | refunded | failed
+refund_id
+VARCHAR(100)
+NULLABLE — Razorpay refund ID
+created_at
+TIMESTAMPTZ
+DEFAULT NOW()
+lab_wallets
+Column
+Type
+Notes
+lab_id
+UUID
+PRIMARY KEY, FK → labs.id
+pending_balance
+INT
+Earned but not yet settled (paise)
+total_earned
+INT
+Cumulative total earned (paise)
+total_paid_out
+INT
+Cumulative total settled (paise)
+updated_at
+TIMESTAMPTZ
+AUTO-UPDATE
+ledger
+Column
+Type
+Notes
+id
+UUID
+PRIMARY KEY
+lab_id
+UUID
+FK → labs.id
+type
+ENUM
+credit | debit — append only, never delete
+amount
+INT
+In paise
+reference_type
+VARCHAR(50)
+payment | refund | payout | adjustment
+reference_id
+UUID
+FK to payments/payouts table
+description
+TEXT
+Human-readable event description
+created_at
+TIMESTAMPTZ
+DEFAULT NOW() — immutable
+technicians
+Column
+Type
+Notes
+id
+UUID
+PRIMARY KEY
+lab_id
+UUID
+FK → labs.id
+user_id
+UUID
+FK → users.id (for auth — technician logs in with phone)
+name
+VARCHAR(100)
+NOT NULL
+phone
+VARCHAR(15)
+UNIQUE NOT NULL
+vehicle
+VARCHAR(50)
+NULLABLE
+shift
+ENUM
+morning | evening | full_day
+status
+ENUM
+on_duty | idle | off_duty | on_break
+current_lat
+FLOAT
+Last known GPS lat (updated via WebSocket)
+current_lng
+FLOAT
+Last known GPS lng
+rating
+FLOAT
+Average rating 0-5.0
+is_active
+BOOLEAN
+DEFAULT TRUE
+reports
+Column
+Type
+Notes
+id
+UUID
+PRIMARY KEY
+booking_id
+UUID
+FK → bookings.id
+lab_id
+UUID
+FK → labs.id
+uploaded_by_tech_id
+UUID
+FK → technicians.id NULLABLE
+cloudinary_url
+TEXT
+Secure Cloudinary PDF URL
+cloudinary_public_id
+VARCHAR(200)
+For deletion/replacement
+file_size_bytes
+INT
+File size
+is_abnormal
+BOOLEAN
+TRUE if any parameter is out of range
+uploaded_at
+TIMESTAMPTZ
+DEFAULT NOW()
+notified_at
+TIMESTAMPTZ
+When patient was notified — NULLABLE
+6. API REFERENCE — ALL ENDPOINTS
+Base URL: https://api.meddynet.com/v1. All endpoints return JSON. Auth-required endpoints need Authorization: Bearer <access_token>. All dates are ISO 8601 UTC.
+Auth — /auth
+Method
+Path
+Auth
+Description
+POST
+/auth/send-otp
+Public
+Trigger SMS OTP. Body: { phone }. Rate: 5/phone/hour.
+POST
+/auth/verify-otp
+Public
+Verify OTP. Body: { phone, otp }. Returns: { access_token, refresh_token, user }.
+POST
+/auth/refresh
+Refresh token
+Rotate tokens. Body: { refresh_token }. Returns: new access_token.
+POST
+/auth/logout
+Bearer
+Revoke session. Adds refresh token to Redis blacklist.
+Users — /users
+Method
+Path
+Auth
+Description
+GET
+/users/me
+user
+Get current user profile.
+PATCH
+/users/me
+user
+Update name, email, blood_group, dob, gender.
+GET
+/users/me/addresses
+user
+List saved addresses.
+POST
+/users/me/addresses
+user
+Add a new address. Body: { label, full_address, lat, lng, is_default }.
+PATCH
+/users/me/addresses/{id}
+user
+Update an address.
+DELETE
+/users/me/addresses/{id}
+user
+Delete an address.
+Labs — /labs
+Method
+Path
+Auth
+Description
+GET
+/labs
+Public
+Search labs. Query: ?q=&city=&nabl=&home=&sort=&page=&per_page=
+GET
+/labs/{id}
+Public
+Lab detail with tests, reviews, facilities.
+GET
+/labs/{id}/tests
+Public
+All tests offered by a lab with prices.
+GET
+/labs/{id}/reviews
+Public
+Paginated reviews for a lab.
+POST
+/labs
+superadmin
+Onboard a new lab.
+PATCH
+/labs/{id}
+lab_admin/superadmin
+Update lab profile.
+PATCH
+/labs/{id}/verify
+superadmin
+Mark lab as verified.
+GET
+/labs/me
+lab_admin
+Current lab's own profile (scoped by JWT lab_id).
+GET
+/labs/me/stats
+lab_admin
+Revenue, booking counts, rating summary.
+Bookings — /bookings
+Method
+Path
+Auth
+Description
+POST
+/bookings
+user
+Create booking. Triggers Razorpay order creation. Body: { lab_id, test_ids[], scheduled_at, type, address?, lat?, lng?, promo_code? }.
+GET
+/bookings/me
+user
+Current user's bookings. Query: ?status=&page=
+GET
+/bookings/{id}
+user/lab_admin
+Full booking detail with tracking steps.
+PATCH
+/bookings/{id}/status
+lab_admin/tech/superadmin
+Update booking status. Body: { status }.
+POST
+/bookings/{id}/cancel
+user/superadmin
+Cancel. Body: { reason }. Triggers refund if paid.
+GET
+/bookings/lab/me
+lab_admin
+All bookings for this lab. Query: ?status=&date=&page=
+POST
+/bookings/{id}/assign
+lab_admin
+Assign a technician. Body: { technician_id }.
+GET
+/bookings/{id}/tracking
+user
+Real-time tracking steps + technician location.
+Payments — /payments
+Method
+Path
+Auth
+Description
+POST
+/payments/create-order
+user
+Create Razorpay order for a booking. Body: { booking_id }. Returns { razorpay_order_id, amount, key_id }.
+POST
+/payments/verify
+user
+Verify Razorpay payment signature. Body: { razorpay_order_id, razorpay_payment_id, razorpay_signature }. On success: updates payment, creates ledger credit, updates lab wallet.
+POST
+/payments/refund
+user/superadmin
+Initiate Razorpay refund. Body: { payment_id, amount?, reason }. Full or partial.
+GET
+/payments/wallet
+lab_admin
+Lab wallet balance: pending_balance, total_earned, total_paid_out.
+GET
+/payments/ledger
+lab_admin
+Paginated ledger entries. Query: ?type=credit|debit&page=
+POST
+/payments/payout
+superadmin
+Trigger manual payout for a lab. Body: { lab_id }.
+GET
+/payments/history
+user
+User's payment history.
+POST
+/webhooks/razorpay
+Public (sig verified)
+Razorpay webhook: payment.captured, refund.processed events.
+Technicians — /technicians
+Method
+Path
+Auth
+Description
+GET
+/technicians
+lab_admin
+All technicians for this lab.
+POST
+/technicians
+lab_admin
+Onboard a new technician. Body: { name, phone, vehicle, shift }.
+PATCH
+/technicians/{id}/duty
+technician
+Toggle on/off duty. Body: { status }.
+PATCH
+/technicians/{id}/location
+technician
+Push GPS coordinates. Body: { lat, lng }. Also published to Redis pub/sub for WebSocket broadcast.
+GET
+/technicians/nearby
+lab_admin/superadmin
+List technicians within radius of a coordinate. Query: ?lat=&lng=&radius_km=
+GET
+/jobs/me
+technician
+Current technician's assigned jobs.
+PATCH
+/jobs/{id}/status
+technician
+Update job status (the 6-step pipeline). Body: { status }.
+POST
+/jobs/{id}/checklist
+technician
+Mark all 4 checklist items complete for a job.
+Reports — /reports
+Method
+Path
+Auth
+Description
+POST
+/reports/upload
+lab_admin/technician
+Upload PDF to Cloudinary, create report record. Body: multipart/form-data { booking_id, file }.
+GET
+/reports/me
+user
+All reports for current user. Query: ?status=
+GET
+/reports/{id}
+user/lab_admin
+Report detail with Cloudinary URL.
+GET
+/reports/{id}/download
+user
+Short-lived signed Cloudinary URL (expires 1h).
+GET
+/reports/lab/me
+lab_admin
+All reports uploaded by this lab.
+DELETE
+/reports/{id}
+superadmin
+Delete report and Cloudinary file.
+Admin — /admin (superadmin only)
+Method
+Path
+Description
+GET
+/admin/users
+Paginated user list. Query: ?search=&status=&city=&page=
+POST
+/admin/users
+Create user manually.
+PATCH
+/admin/users/{id}/suspend
+Suspend/reactivate user.
+DELETE
+/admin/users/{id}
+Hard delete user.
+GET
+/admin/labs
+All labs with verification status.
+PATCH
+/admin/labs/{id}/verify
+Verify lab as a MeddyNet partner.
+GET
+/admin/bookings
+All bookings across all labs.
+GET
+/admin/analytics
+Platform KPIs: revenue, bookings, users, NPS.
+POST
+/admin/notifications/broadcast
+Send push/email/SMS to all users or a segment.
+GET
+/admin/audit-log
+Immutable audit log of all admin actions.
+POST
+/admin/payouts/batch
+Trigger batch payout for all eligible labs.
+GET
+/admin/platform-health
+Service status for all infrastructure components.
+7. PAYMENT & WALLET SYSTEM
+MeddyNet operates as a marketplace. When a user pays for a booking, the platform temporarily holds the lab's share (escrow-like) in a ledger until the test is completed and the refund window passes. Settlements are then released to labs via Razorpay Payouts.
+Payment Flow — Step by Step
+Step
+Code Path
+What Happens
+1. Create Order
+POST /payments/create-order
+Calls razorpay.order.create({ amount, currency: 'INR' }). Stores razorpay_order_id in payments table (status=pending).
+2. User Pays
+Razorpay Checkout (frontend)
+User completes payment in Razorpay's checkout. Returns { razorpay_order_id, razorpay_payment_id, razorpay_signature }.
+3. Verify Signature
+POST /payments/verify
+Backend computes HMAC-SHA256 of order_id + '|' + payment_id using Razorpay secret. If mismatch → 400 Fraud. If match → payment confirmed.
+4. Split Commission
+payment_service.split()
+commission = total * lab.commission_rate (default 0.15). lab_amount = total - commission. Both stored in payments row.
+5. Update Wallet
+wallet_service.credit()
+lab_wallets.pending_balance += lab_amount. lab_wallets.total_earned += lab_amount.
+6. Ledger Entry
+wallet_service.ledger_credit()
+Insert into ledger: { type=credit, amount=lab_amount, reference_type=payment, reference_id=payment.id }.
+7. Update Booking
+booking_service.confirm()
+booking.status = 'confirmed'. WebSocket broadcast: BOOKING_CONFIRMED to lab and user rooms.
+Refund Flow
+Refunds are only possible if the booking status is not 'completed' or if within the 24-hour post-collection window.
+def process_refund(payment_id, amount=None):
+    payment = get_payment(payment_id)
+    refund = razorpay.refund.create({ payment_id, amount or payment.total_amount })
+    payment.status = 'refunded'
+    payment.refund_id = refund.id
+    wallet.pending_balance -= payment.lab_amount  # deduct from pending
+    ledger.append({ type='debit', reference_type='refund', amount=lab_amount })
+Payout / Settlement Flow
+Payouts are triggered either manually by an admin (POST /admin/payouts/batch) or automatically by a Celery cron job that runs daily at 11:00 PM IST.
+@celery.task
+def process_daily_payouts():
+    eligible_labs = query labs where:
+        - pending_balance > 0
+        - all bookings older than 24h have status=completed
+    for lab in eligible_labs:
+        razorpay.payout.create({
+            fund_account_id: lab.razorpay_fund_account_id,
+            amount: lab.pending_balance,
+            mode: 'IMPS', currency: 'INR'
+        })
+        wallet.pending_balance = 0
+        wallet.total_paid_out += amount
+        ledger.append({ type='debit', reference_type='payout' })
+Lab Bank Account Registration
+Before any payout can be made, each lab must have a registered bank account. This creates a Razorpay Contact + Fund Account:
+POST /labs/me/bank-account
+Body: { beneficiary_name, account_number, ifsc, account_type: 'savings|current' }
+Backend:
+  contact = razorpay.contact.create({ name, email, type: 'vendor' })
+  fund_account = razorpay.fund_account.create({
+    contact_id: contact.id,
+    account_type: 'bank_account',
+    bank_account: { name, ifsc, account_number }
+  })
+  lab.razorpay_fund_account_id = fund_account.id  # stored encrypted
+8. REAL-TIME LAYER (WEBSOCKET)
+The WebSocket server runs alongside FastAPI using the same Uvicorn process (FastAPI natively supports WebSockets via Starlette). Each client connects with a valid JWT in the URL or via a header. Redis pub/sub ensures all WebSocket server instances broadcast to the right rooms.
+Connection URL
+wss://api.meddynet.com/ws?token=<access_token>
+Room Architecture
+booking:{booking_id} — user + assigned technician + lab admin all join this room
+lab:{lab_id} — all lab admins receive new booking notifications
+tech:{tech_id} — technician receives job assignment notifications
+admin — superadmin broadcast room
+Message Types
+Event Type
+Sender
+Receiver
+Payload
+LOCATION_UPDATE
+Technician PWA
+user app (via booking room)
+{ lat, lng, timestamp, tech_id, eta_minutes }
+JOB_STATUS_UPDATE
+Technician PWA / Lab Portal
+User App
+{ booking_id, status, message }
+NEW_BOOKING
+API (on booking confirmed)
+Lab Portal
+{ booking_id, patient_name, address, scheduled_at, tests[] }
+TECH_ASSIGNED
+API (on assign)
+Technician PWA
+{ job_id, patient_name, address, lat, lng, tests[] }
+CHECKLIST_COMPLETE
+Technician PWA
+Lab Portal
+{ booking_id, tech_id, completed_at }
+NOTIFICATION
+API / Admin
+Any client
+{ title, body, type, link, created_at }
+BOOKING_CONFIRMED
+API (on payment verify)
+User + Lab
+{ booking_id, status, scheduled_at }
+Redis Pub/Sub Pattern
+When running multiple Uvicorn workers, a WebSocket connected to worker A needs to receive messages published by worker B. Redis pub/sub solves this:
+# Publisher (any worker, after payment verify):
+redis.publish(f'booking:{booking_id}', json.dumps({ 'type': 'BOOKING_CONFIRMED', ... }))
+# Subscriber (WebSocket manager, all workers):
+async def listen_redis():
+    async for message in pubsub.listen():
+        room_id = message['channel']
+        await broadcast_to_room(room_id, message['data'])
+9. BACKGROUND JOBS (CELERY + REDIS)
+Celery workers connect to Redis (as the broker) and execute jobs asynchronously. The result backend is also Redis. Critical jobs have retry logic with exponential backoff.
+Task
+Trigger
+Schedule / Retry
+process_daily_payouts
+Cron: 23:00 IST daily
+Retry 3x with 5min backoff on Razorpay failure
+send_otp_sms
+POST /auth/send-otp
+Immediate async; retry 2x on MSG91 failure
+send_booking_confirmation_sms
+POST /payments/verify
+Immediate async
+send_report_ready_notification
+POST /reports/upload
+Immediate; sends push + SMS
+send_booking_reminder
+Cron: every 30min
+Find bookings scheduled in next 60min, send reminder
+auto_cancel_unpaid_bookings
+Cron: every 15min
+Cancel bookings with status=pending and payment>30min old
+generate_analytics_snapshot
+Cron: 00:05 IST daily
+Aggregate daily stats into MongoDB for admin dashboard
+retry_failed_payouts
+Cron: every 4h
+Retry Razorpay payouts that failed (status=failed in payouts table)
+Celery Configuration
+# celery_app.py
+from celery import Celery
+celery_app = Celery(
+    'meddynet',
+    broker='redis://localhost:6379/0',
+    backend='redis://localhost:6379/1',
+    include=['app.tasks.payout_tasks', 'app.tasks.notification_tasks']
+)
+celery_app.conf.beat_schedule = {
+    'daily-payouts': { 'task': 'process_daily_payouts',
+                       'schedule': crontab(hour=23, minute=0) },
+    'booking-reminders': { 'task': 'send_booking_reminder',
+                           'schedule': crontab(minute='*/30') },
+}
+10. FILE STORAGE (CLOUDINARY)
+All diagnostic report PDFs, prescription images, and lab profile images are stored in Cloudinary. Direct client uploads are not allowed — all files go through the FastAPI backend.
+Upload Flow
+# report_service.py
+import cloudinary.uploader
+async def upload_report(file: UploadFile, booking_id: str, lab_id: str):
+    result = cloudinary.uploader.upload(
+        file.file,
+        resource_type='raw',           # for PDFs
+        folder=f'reports/{lab_id}',
+        public_id=f'{booking_id}',
+        format='pdf',
+        access_mode='authenticated'    # signed URLs only
+    )
+    return result['secure_url'], result['public_id'], result['bytes']
+Signed URL Generation (for patient download)
+# Called by GET /reports/{id}/download
+url = cloudinary.utils.cloudinary_url(
+    public_id,
+    resource_type='raw',
+    type='authenticated',
+    sign_url=True,
+    expires_at=int(time.time()) + 3600  # 1 hour
+)[0]
+Folder Structure in Cloudinary
+reports/{lab_id}/{booking_id}.pdf — diagnostic reports
+prescriptions/{user_id}/{timestamp}.jpg — patient prescriptions
+labs/{lab_id}/profile.jpg — lab profile images
+labs/{lab_id}/certificates/{cert_name}.pdf — NABL/ISO certificates
+11. ANALYTICS LAYER (MONGODB)
+MongoDB Atlas stores append-only event data that doesn't fit the relational model: platform events, audit logs, notification delivery history, and admin action logs.
+Collections
+Collection
+Purpose
+Sample Document
+events
+Platform event stream
+{ type: 'booking_created', booking_id, user_id, lab_id, amount, timestamp }
+audit_log
+Admin action record
+{ admin_id, action: 'verify_lab', target_id, ip_address, timestamp }
+notification_log
+Delivery receipts
+{ user_id, channel: 'sms|push|email', message_id, status, delivered_at }
+lab_daily_stats
+Daily rollup per lab
+{ lab_id, date, booking_count, revenue, new_patients, avg_rating }
+platform_daily_stats
+Platform-wide rollup
+{ date, total_bookings, total_revenue, new_users, active_labs }
+search_logs
+User search queries
+{ query, city, result_count, clicked_lab_id, timestamp }
+12. ENVIRONMENT VARIABLES
+All secrets are managed via a .env file in development and via the deployment platform's secrets manager in production. Never commit secrets to version control.
+Variable
+Required
+Description
+DATABASE_URL
+Yes
+NeonDB PostgreSQL connection string — postgresql+asyncpg://user:pass@host/db?sslmode=require
+SUPABASE_URL
+Yes
+Supabase project URL — https://xxx.supabase.co
+SUPABASE_ANON_KEY
+Yes
+Supabase anonymous key for auth operations
+SUPABASE_SERVICE_KEY
+Yes
+Supabase service role key (server-side only)
+JWT_SECRET_KEY
+Yes
+64-char random string for signing your own JWTs
+RAZORPAY_KEY_ID
+Yes
+Razorpay API Key ID (live or test)
+RAZORPAY_KEY_SECRET
+Yes
+Razorpay API Key Secret
+RAZORPAY_WEBHOOK_SECRET
+Yes
+Razorpay webhook signature secret
+CLOUDINARY_CLOUD_NAME
+Yes
+Cloudinary cloud name
+CLOUDINARY_API_KEY
+Yes
+Cloudinary API key
+CLOUDINARY_API_SECRET
+Yes
+Cloudinary API secret
+REDIS_URL
+Yes
+Upstash Redis URL — redis://user:pass@host:port
+MONGODB_URL
+Yes
+MongoDB Atlas connection string
+MONGODB_DB_NAME
+Yes
+MongoDB database name — meddynet_analytics
+MSG91_AUTH_KEY
+Yes (India)
+MSG91 API key for SMS OTP delivery
+MSG91_TEMPLATE_ID
+Yes (India)
+MSG91 OTP template ID (DLT registered)
+CORS_ORIGINS
+Yes
+Comma-separated allowed origins
+ENVIRONMENT
+Yes
+development | staging | production
+SECRET_KEY
+Yes
+FastAPI session secret — 32-char random
+ALLOWED_ADMIN_IPS
+Optional
+Comma-separated IPs for /admin/* routes (extra layer)
+13. SETUP & INSTALLATION
+Prerequisites
+Python 3.12+
+Redis (local or Upstash cloud)
+PostgreSQL client (NeonDB handles the server)
+A Supabase project (free tier works)
+Razorpay test account
+Cloudinary free account
+Local Development Setup
+# 1. Clone and enter
+git clone https://github.com/meddynet/meddynet-backend.git
+cd meddynet-backend
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+# 3. Install dependencies
+pip install -r requirements.txt
+# 4. Copy and fill environment variables
+cp .env.example .env
+# Edit .env with your credentials
+# 5. Run database migrations
+alembic upgrade head
+# 6. Seed development data (optional)
+python scripts/seed.py
+# 7. Start FastAPI server
+uvicorn app.main:app --reload --port 8000
+# 8. Start Celery worker (separate terminal)
+celery -A app.celery_app worker --loglevel=info
+# 9. Start Celery beat scheduler (separate terminal)
+celery -A app.celery_app beat --loglevel=info
+# API docs available at:
+# http://localhost:8000/docs  (Swagger)
+# http://localhost:8000/redoc (ReDoc)
+14. DEPLOYMENT ARCHITECTURE
+The recommended production deployment uses Railway (FastAPI) + Upstash Redis + NeonDB + MongoDB Atlas + Cloudinary. All are serverless/managed services that scale automatically.
+Service
+Provider
+Tier / Notes
+FastAPI API
+Railway
+2x replicas, 2 vCPU, 2GB RAM each. Auto-deploy from GitHub main branch.
+Celery Workers
+Railway
+1x worker instance. Separate Railway service from the API.
+PostgreSQL
+NeonDB
+Scale plan — connection pooling via PgBouncer (built-in). Serverless auto-pause on inactivity.
+Auth
+Supabase
+Free tier handles OTP for up to 50k MAU. Pro plan for SMS customization.
+Redis
+Upstash
+Pay-per-request. Serverless. Separate databases for cache (db0) and Celery (db1).
+File Storage
+Cloudinary
+Free tier: 25GB storage, 25GB bandwidth/month. Upgrade as reports volume grows.
+MongoDB
+MongoDB Atlas
+M0 free tier for dev. M10 ($57/mo) for production analytics.
+CDN / WAF
+Cloudflare
+Free plan: DDoS, SSL, caching. Set DNS to proxy all traffic through Cloudflare.
+SMS
+MSG91
+DLT-registered OTP template. Transactional SMS (not promotional).
+Monitoring
+Railway built-in + Sentry
+Sentry for error tracking (FastAPI SDK). Railway for resource metrics.
+Docker Compose (Development)
+version: '3.9'
+services:
+  api:
+    build: .
+    ports: ['8000:8000']
+    env_file: .env
+    depends_on: [redis]
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  worker:
+    build: .
+    env_file: .env
+    depends_on: [redis]
+    command: celery -A app.celery_app worker --loglevel=info
+  beat:
+    build: .
+    env_file: .env
+    depends_on: [redis]
+    command: celery -A app.celery_app beat --loglevel=info
+  redis:
+    image: redis:7-alpine
+    ports: ['6379:6379']
+15. SECURITY CHECKLIST
+Authentication & Session
+JWT secret is 64+ random characters, rotated every 90 days
+Access token TTL: 15 minutes. Refresh token TTL: 7 days
+Refresh tokens stored in Redis with server-side revocation on logout
+OTP rate-limited: 5 per phone per hour (Redis counter with TTL)
+All /admin/* routes require superadmin role AND IP allowlist check
+Payment Security
+Razorpay signature verified on every /payments/verify call (HMAC-SHA256)
+Razorpay webhook signature verified via X-Razorpay-Signature header
+payment_id stored as UNIQUE in DB — duplicate webhook events are idempotent
+Bank account numbers encrypted at rest (Fernet symmetric encryption)
+Lab fund_account_id never exposed in API responses
+Data Protection
+All connections use TLS 1.2+ (enforced by Cloudflare)
+NeonDB connections require SSL (sslmode=require in connection string)
+PII (phone, address, DOB) encrypted at rest in NeonDB (column-level AES)
+Cloudinary reports use 'authenticated' access — no public URLs
+User phone numbers are not returned in lab/technician API responses
+API Protection
+Global rate limit: 100 requests/min per IP (slowapi)
+Auth endpoints: 5 OTP requests/phone/hour (custom Redis counter)
+CORS: only configured origins allowed (no wildcard in production)
+File upload: max 10MB, MIME type validated (PDF, JPEG, PNG only)
+SQL injection: prevented by SQLAlchemy parameterized queries (never raw SQL)
+Cloudflare WAF blocks common attack patterns at edge
+16. SCALABILITY ROADMAP
+Phase
+When
+Changes
+Phase 1 (MVP)
+0-1000 users
+Current architecture. Single Railway service. NeonDB free tier. Upstash Redis. All manual payouts.
+Phase 2
+1k-10k users
+Add read replica on NeonDB for analytics queries. Enable Celery auto-payouts. Add Redis cache for lab/test listings (5-min TTL). Split Celery workers by queue (payouts vs notifications).
+Phase 3
+10k-100k users
+Add CDN caching for public lab/test endpoints. Database connection pooling (PgBouncer on NeonDB). Dedicated MongoDB instance for analytics. Rate limiting per user (not just per IP). Multi-region Railway deployment.
+Phase 4
+100k+ users
+Consider Kafka for event streaming instead of Redis pub/sub. Read replicas in each city for low-latency lab search. Sharding strategy for bookings table. Full observability with Datadog or Grafana.
+API Versioning Strategy
+The current API version is /v1/. When breaking changes are required, /v2/ is deployed alongside /v1/ for a 6-month deprecation window. Version is in the URL path (not headers) for simplicity.
+Recommended Testing Setup
+pytest + pytest-asyncio for async FastAPI route testing
+Factory Boy for test fixture generation
+Testcontainers for PostgreSQL and Redis in CI/CD
+httpx AsyncClient for integration tests (built into FastAPI test utilities)
+Locust for load testing before major releases
+MeddyNet Backend Documentation v1.0.0  •  April 2026  •  api.meddynet.com

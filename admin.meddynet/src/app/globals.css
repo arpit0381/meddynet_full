@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-primary: #00A86B;
+  --color-accent: #1E88E5;
+  --color-surface: var(--background);
+  --color-card: var(--card-bg);
+  --color-border-dim: var(--border-color);
+  --color-muted: var(--muted-text);
+  --color-input: var(--input-bg);
+  --color-dark: #0F172A;
+  --color-main-text: var(--foreground);
+  --font-sans: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+:root {
+  --background: #F7FBFF;
+  --foreground: #2C3E50;
+  --card-bg: #FFFFFF;
+  --border-color: #E2E8F0;
+  --muted-text: #64748B;
+  --input-bg: #FFFFFF;
+}
+
+.dark {
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --card-bg: #1E293B;
+  --border-color: #334155;
+  --muted-text: #94A3B8;
+  --input-bg: #1E293B;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

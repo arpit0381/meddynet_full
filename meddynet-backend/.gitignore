@@ -1,0 +1,39 @@
+# MeddyNet Backend — Gitignore
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+.venv/
+env/
+
+# Testing
+.pytest_cache/
+htmlcov/
+coverage/
+
+# Database
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Archives (dev scripts)
+scripts/archive/
+
+# OS
+.DS_Store
+nul

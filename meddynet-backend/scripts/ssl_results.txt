@@ -1,0 +1,26 @@
+Python: 3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]
+OpenSSL: OpenSSL 3.0.13 30 Jan 2024
+Target: ac-pzspd9o-shard-00-00.6lzhtrl.mongodb.net:27017
+certifi: C:\Users\ashwi\AppData\Local\Programs\Python\Python311\Lib\site-packages\certifi\cacert.pem
+
+============================================================
+[Test 1] Raw TCP socket connection
+  RESULT: TCP OK
+
+============================================================
+[Test 2] TLS handshake - default context + certifi
+  RESULT: FAILED - SSLError: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1006)
+
+============================================================
+[Test 3] TLS handshake - CERT_NONE (no verification)
+  RESULT: FAILED - SSLError: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1006)
+
+============================================================
+[Test 4] TLS handshake - force TLS 1.2
+  RESULT: FAILED - SSLError: [SSL: TLSV1_ALERT_INTERNAL_ERROR] tlsv1 alert internal error (_ssl.c:1006)
+
+============================================================
+[Test 5] Public IP (must be whitelisted in Atlas)
+  Your IP: 152.59.176.168
+
+DONE

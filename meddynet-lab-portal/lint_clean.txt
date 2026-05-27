@@ -1,0 +1,30 @@
+﻿
+C:\Users\ashwi\.gemini\antigravity\scratch\meddynet-lab-portal\src\app\calendar\page.tsx
+  43:9  warning  The 'days' array makes the dependencies of useMemo Hook (at line 63) change on every render. To fix this, wrap the initialization of 'days' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+C:\Users\ashwi\.gemini\antigravity\scratch\meddynet-lab-portal\src\app\technicians\page.tsx
+  118:23  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\meddynet-lab-portal\src\app\tests\add\page.tsx
+  3:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\meddynet-lab-portal\src\components\ui\Modal.tsx
+  20:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\meddynet-lab-portal\src\components\ui\Modal.tsx:20:5
+  18 |
+  19 |   useEffect(() => {
+> 20 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |   }, []);
+  22 |
+  23 |   useEffect(() => {  react-hooks/set-state-in-effect
+
+Γ£û 4 problems (1 error, 3 warnings)
+

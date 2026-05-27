@@ -1,0 +1,13 @@
+﻿
+> meddynet@0.1.0 lint
+> eslint
+
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\partnership\page.tsx
+   3:8  warning  'Image' is defined but never used                @typescript-eslint/no-unused-vars
+   4:8  warning  'AnimatedPartnerLink' is defined but never used  @typescript-eslint/no-unused-vars
+  11:3  warning  'Building2' is defined but never used            @typescript-eslint/no-unused-vars
+  13:3  warning  'Zap' is defined but never used                  @typescript-eslint/no-unused-vars
+
+Γ£û 4 problems (0 errors, 4 warnings)
+

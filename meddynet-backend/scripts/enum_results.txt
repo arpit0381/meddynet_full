@@ -1,0 +1,9 @@
+[DB] Checking Enums...
+Checking technicianstatus:
+  Labels: ['on_duty', 'idle', 'off_duty', 'on_break']
+Checking shifttype:
+  Labels: ['morning', 'evening', 'full_day']
+Checking bookingstatus:
+  Labels: ['pending', 'confirmed', 'assigned', 'on_the_way', 'arrived', 'sample_collected', 'report_ready', 'completed', 'cancelled']
+Checking bookingtype:
+  Labels: ['home_collection', 'lab_visit']

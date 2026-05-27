@@ -1,0 +1,407 @@
+MeddyNet
+National Diagnostics Discovery & Booking Platform
+Tagline:Find, Compare, and Book Medical Tests Near You.
+1. Platform Overview
+MeddyNet is a location-based healthcare platform that connects users with nearby pathology labs, allowing them to:
+• Search medical tests• Discover nearby labs on an interactive map• Compare prices• Book home sample collection• Book lab visit appointments• Store lifelong digital health records
+The platform aggregates diagnostic labs and standardizes access to healthcare services.
+2. Business Model
+MeddyNet follows a subscription + commission model.
+Revenue Sources
+Lab Subscription Plans
+Labs pay monthly/annual fees to appear on the platform.
+Commission Per Test
+MeddyNet charges 18% commission on every test booking.
+Example:
+Test price = ₹1000MeddyNet commission = ₹180Lab receives = ₹820
+Premium Lab Visibility
+Labs can appear higher in search results.
+Health Packages
+Preventive health subscription for users.
+3. Lab Subscription Plans
+Basic Plan
+Best for small labs.
+Features:
+• Lab listing on platform• Test listing management• Appointment booking• Report upload• Basic analytics
+Limitations:
+• No priority listing• Limited technician support
+Advanced Plan
+Best for mid-size labs.
+Includes:
+• Everything in Basic• Priority search ranking• Home sample collection integration• Lab performance analytics• Technician management tools
+Premium Plan
+Best for large labs.
+Includes:
+• Everything in Advanced• Featured listing on homepage• marketing promotion inside app• AI demand analytics• API integration with lab systems
+4. Platform Ecosystem
+MeddyNet consists of four applications.
+1 Patient Application
+Used by people booking tests.
+2 Lab Partner Dashboard
+Used by pathology labs.
+3 Technician Application
+Used for home sample collection.
+4 Admin Panel
+Used by MeddyNet operations team.
+5. High-Level System Architecture
+User Applications(Web + Mobile)        ↓API Gateway        ↓Backend Microservices        ↓Database Layer(PostgreSQL + MongoDB)        ↓Storage Layer(Reports & Documents)        ↓Infrastructure Layer(Docker + Kubernetes)
+6. Technology Stack
+Frontend
+Framework:
+Next.js (React)
+UI Framework:
+TailwindCSS
+Component Library:
+Shadcn UI
+Animations:
+Framer Motion
+Map Integration:
+Mapbox GL JS
+Deployment:
+Vercel
+Backend
+Primary Backend:
+Python FastAPI
+Secondary Services:
+Node.js microservices
+Handles:
+• booking system• notifications• payments
+Databases
+PostgreSQL
+Stores structured data:
+• users• labs• tests• appointments• subscriptions
+MongoDB
+Stores flexible data:
+• reports• activity logs• analytics• search history
+Storage
+Medical reports stored using:
+Supabase Storage or AWS S3.
+Authentication
+Supabase Auth
+Supports:
+• OTP login• email login• JWT authentication
+7. Map & Location System
+MeddyNet uses Mapbox or Google Maps API.
+Functions:
+• show nearby pathology labs• show distance• show directions• show test availability
+Labs appear on map only when:
+• registered• verified by admin
+8. Core Platform Modules
+1 User Management2 Lab Management3 Test Search Engine4 Location-based Lab Discovery5 Map Visualization6 Price Comparison System7 Booking Engine8 Technician Dispatch System9 Report Management10 Health Records Vault11 Payment Processing12 Subscription Management13 Notification System14 Analytics System
+9. Patient Application Pages
+1 Landing Page
+Displays:
+• MeddyNet introduction• test search bar• featured labs• location detection
+2 Test Search Page
+User searches:
+Blood TestThyroid TestVitamin Test
+Results show:
+• nearby labs• test price• rating• distance
+3 Map View Page
+Interactive map displaying nearby labs.
+Features:
+• lab markers• distance calculation• click to view lab details
+4 Lab Details Page
+Shows:
+• lab name• location• test list• pricing• rating• home collection availability
+Buttons:
+Book Home TestVisit Lab
+5 Price Comparison Page
+Displays labs offering same test.
+User chooses best option.
+6 Booking Page
+User chooses:
+Option 1Home sample collection
+Option 2Visit lab appointment
+Fields:
+• date• time slot• address
+7 Booking Confirmation Page
+Displays:
+• booking ID• appointment details• technician details (if home)
+8 Reports Dashboard
+Users can:
+• download reports• view past tests• share reports
+9 Health Record Vault
+Stores:
+• lab tests• prescriptions• medical history
+10 Profile Page
+User details:
+• personal information• addresses• medical records
+10. Lab Partner Dashboard
+Labs manage services.
+Lab Registration Page
+Information required:
+• lab name• owner name• license number• location• contact details
+Subscription Plan Selection
+Labs choose:
+BasicAdvancedPremium
+Payment required.
+Lab Dashboard
+Displays:
+• daily bookings• revenue• pending reports• subscription status
+Test Management
+Labs can:
+• add tests• update prices• remove tests
+Appointment Manager
+Shows:
+• upcoming bookings• patient details• test type
+Report Upload System
+Labs upload:
+PDF reports
+Users receive notifications.
+11. Technician Application
+Used for home sample collection.
+Technician Login
+Secure login.
+Technician Dashboard
+Displays:
+• assigned appointments• patient addresses
+Sample Collection Update
+Technician marks:
+• sample collected• sample delivered
+12. Booking Engine
+Booking flow:
+User searches test      ↓System finds nearby labs      ↓User compares prices      ↓User selects lab      ↓User chooses booking type(home or visit)      ↓Appointment scheduled
+13. Payment System
+Payment options:
+• UPI• credit card• debit card• pay at lab
+Payment gateway:
+Razorpay.
+Platform automatically deducts 18% commission.
+14. Notification System
+Notifications sent through:
+• SMS• email• push notifications
+Examples:
+• booking confirmation• appointment reminder• report available
+15. Database Structure
+Main tables:
+UsersLabsTestsLabTestsAppointmentsTechniciansReportsSubscriptionsPayments
+16. Docker Architecture
+Containers:
+• frontend container• backend container• postgres container• mongodb container
+Docker compose manages services.
+17. Kubernetes Deployment
+Kubernetes cluster manages:
+Frontend podsBackend podsDatabase podsStorage services
+Supports automatic scaling.
+18. Security System
+Security features:
+• encrypted API communication• secure authentication• role-based access control• report encryption
+Healthcare data protection is essential.
+19. Scalability Strategy
+Phase 1
+Launch in one city.
+Phase 2
+Expand to tier-2 cities.
+Phase 3
+Nationwide network.
+20. Future Features
+AI health insightsmedicine availability searchdoctor consultationinsurance integrationpreventive health subscriptions
+Final Vision
+MeddyNet aims to become:
+India’s largest diagnostics discovery and booking network.
+Connecting:
+PatientsLabsHospitalsTechnicians
+Through a single digital platform.
+MeddyNet Web Application
+Full UI Wireframe (45 Screens)
+1. Public Website (Landing + Marketing)
+These pages are accessible without login.
+1. Landing Page
+Sections:
+Hero SectionSearch Medical TestNearby Labs Map PreviewHow MeddyNet WorksFeatures SectionPartner Labs SectionTestimonialsCTA SectionFooter
+Main CTA:
+Search TestRegister Lab
+2. Search Test Page
+Components:
+Search barPopular tests
+Filters:
+LocationPrice rangeHome collection availableRating
+Results list appears below.
+3. Map Discovery Page
+Full map interface.
+Elements:
+Map with lab markersLeft sidebar results list
+Each lab card shows:
+Lab nameDistanceTest priceRating
+Buttons:
+View DetailsBook Test
+4. Lab Details Page
+Information:
+Lab nameAddressRatingOperating hoursMap location
+Tabs:
+TestsReviewsAbout
+Buttons:
+Book Home CollectionVisit Lab
+5. Price Comparison Page
+Table comparison:
+| Lab | Price | Distance | Rating |
+User selects preferred lab.
+6. Test Details Page
+Displays:
+Test descriptionPreparation instructionsReport delivery time
+Options:
+Book home sampleVisit lab
+7. Booking Page
+Form:
+Patient nameDateTime slotAddress (if home)
+Submit booking.
+8. Booking Confirmation Page
+Displays:
+Booking IDLab detailsAppointment time
+Buttons:
+Track bookingView bookings
+9. Login Page
+Options:
+User loginLab loginTechnician login
+Fields:
+Email / PhonePassword
+10. Signup Page
+User registration:
+NamePhoneEmailPassword
+2. User Dashboard (Patient Portal)
+Accessible after login.
+11. User Dashboard
+Sidebar:
+DashboardSearch TestsMy BookingsReportsHealth RecordsProfileLogout
+Main widgets:
+Recent bookingsNearby labsQuick search
+12. Test Search Dashboard Page
+Advanced search.
+Filters:
+LocationTest categoryPriceHome collection
+13. Map Lab Discovery Page
+Large map with filters.
+User sees labs in radius.
+14. Lab Profile Page
+Detailed lab view.
+Tabs:
+TestsReviewsFacilities
+15. Book Test Page
+Choose:
+Home sample collectionVisit lab
+16. Appointment Scheduler
+Calendar interface.
+Choose:
+DateTime slot
+17. Booking Summary Page
+Displays:
+TestLabPricePlatform fee
+Confirm payment.
+18. My Bookings Page
+Table:
+Booking IDTestLabDateStatus
+Buttons:
+TrackCancel
+19. Booking Tracking Page
+Status timeline:
+Booking confirmedTechnician assignedSample collectedReport ready
+20. Reports Dashboard
+User sees report list.
+Table:
+TestLabDateDownload
+21. Report Viewer Page
+PDF viewer.
+Options:
+DownloadSharePrint
+22. Health Records Page
+Timeline view of health history.
+Includes:
+TestsPrescriptions
+23. Prescription Upload Page
+Upload image/PDF.
+System recommends tests.
+24. Notifications Page
+Displays alerts.
+Example:
+Report readyBooking reminder
+25. User Profile Page
+User details.
+Edit:
+NameAddressPhone
+3. Lab Partner Dashboard
+This is the SaaS dashboard for pathology labs.
+26. Lab Registration Page
+Fields:
+Lab nameOwner nameLicense numberAddressContact info
+27. Subscription Plan Page
+Plans:
+BasicAdvancedPremium
+Shows features comparison.
+28. Lab Dashboard
+Widgets:
+Today's bookingsMonthly revenuePending reportsTotal tests
+Charts:
+Bookings graph.
+29. Test Management Page
+Table:
+Test namePriceReport timeHome collection
+Buttons:
+Add testEdit test
+30. Add Test Page
+Fields:
+Test namePriceDescriptionReport time
+31. Booking Management Page
+List of bookings.
+Columns:
+Booking IDPatientTestStatus
+Actions:
+AcceptReject
+32. Appointment Calendar
+Calendar view of bookings.
+33. Report Upload Page
+Upload:
+PDF reports.
+Fields:
+Patient nameTest nameUpload file
+34. Technician Management Page
+Add technician.
+Fields:
+NamePhoneAvailability
+35. Earnings Dashboard
+Displays:
+Total earningsCommission deducted (18%)Net payout
+Charts included.
+36. Lab Profile Page
+Edit:
+Operating hoursLocationServices
+4. Technician Portal
+37. Technician Login Page
+Phone login with OTP.
+38. Technician Dashboard
+Displays:
+Today's collectionsAssigned appointments
+39. Appointment Details Page
+Shows:
+Patient addressTest typeTime slot
+40. Navigation Page
+Map route to patient.
+41. Sample Collection Page
+Button:
+Mark sample collected.
+5. Admin Panel
+Used by MeddyNet team.
+42. Admin Dashboard
+Metrics:
+Total usersTotal labsTotal bookingsRevenue
+Charts included.
+43. Lab Verification Page
+Approve or reject lab registrations.
+44. Booking Monitoring Page
+Admin can monitor all bookings.
+45. Revenue Analytics Page
+Shows:
+Commission earningsLab performancePlatform growth
+Full Screen Count
+Public Website → 10User Dashboard → 15Lab Portal → 11Technician Portal → 5Admin Panel → 4
+Total:
+45 Screens
+Complete Web Application Layout
+Typical page layout:
+Top Navbar   |Sidebar Navigation   |Main Content Area   |Footer
+Key UX Components
+Global search barInteractive mapData tablesBooking timelineAnalytics chartsCalendar scheduling
+Final Product Vision
+MeddyNet becomes a full SaaS healthcare infrastructure platform connecting:
+PatientsPathology labsTechniciansHealthcare providers
+All through one digital ecosystem.

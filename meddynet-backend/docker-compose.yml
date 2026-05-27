@@ -1,0 +1,59 @@
+# FIX 18: Removed deprecated 'version' attribute (not needed in Docker Compose v2+)
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://admin:password@postgres_db:5432/meddynet
+      - REDIS_URL=redis://redis_cache:6379/0
+      - MONGODB_URL=mongodb://mongo_db:27017/
+      - ENVIRONMENT=development
+    depends_on:
+      - postgres_db
+      - redis_cache
+      - mongo_db
+
+  celery_worker:
+    build: .
+    volumes:
+      - .:/app
+    command: celery -A app.celery_app worker --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis_cache:6379/0
+      - DATABASE_URL=postgresql+asyncpg://admin:password@postgres_db:5432/meddynet
+    depends_on:
+      - redis_cache
+      - postgres_db
+
+  celery_beat:
+    build: .
+    volumes:
+      - .:/app
+    command: celery -A app.celery_app beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis_cache:6379/0
+    depends_on:
+      - redis_cache
+
+  postgres_db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: meddynet
+    ports:
+      - "5433:5432"
+
+  redis_cache:
+    image: redis:7
+    ports:
+      - "6380:6379"
+
+  mongo_db:
+    image: mongo:6
+    ports:
+      - "27017:27017"

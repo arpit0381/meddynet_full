@@ -1,0 +1,422 @@
+﻿
+> meddynet@0.1.0 lint
+> eslint
+
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\about\page.tsx
+   8:46  warning  'Globe2' is defined but never used        @typescript-eslint/no-unused-vars
+   8:54  warning  'Beaker' is defined but never used        @typescript-eslint/no-unused-vars
+   9:17  warning  'Users' is defined but never used         @typescript-eslint/no-unused-vars
+   9:24  warning  'Briefcase' is defined but never used     @typescript-eslint/no-unused-vars
+   9:35  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+  11:10  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  11:20  warning  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\blog\[id]\page.tsx
+  5:38  warning  'User' is defined but never used     @typescript-eslint/no-unused-vars
+  5:52  warning  'Printer' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\blog\page.tsx
+    6:40   warning  'ChevronRight' is defined but never used                         @typescript-eslint/no-unused-vars
+  276:42   warning  'i' is defined but never used                                    @typescript-eslint/no-unused-vars
+  393:100  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\careers\page.tsx
+  7:18  warning  'DollarSign' is defined but never used    @typescript-eslint/no-unused-vars
+  7:44  warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\chat\page.tsx
+  12:3  warning  'Video' is defined but never used          @typescript-eslint/no-unused-vars
+  20:3  warning  'MessageCircle' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\bookings\[id]\page.tsx
+    4:25  warning  'useEffect' is defined but never used             @typescript-eslint/no-unused-vars
+    8:5   warning  'Circle' is defined but never used                @typescript-eslint/no-unused-vars
+   10:5   warning  'MapPin' is defined but never used                @typescript-eslint/no-unused-vars
+   11:5   warning  'Home' is defined but never used                  @typescript-eslint/no-unused-vars
+   16:5   warning  'Calendar' is defined but never used              @typescript-eslint/no-unused-vars
+   19:5   warning  'ChevronRight' is defined but never used          @typescript-eslint/no-unused-vars
+   23:5   warning  'ChevronUp' is defined but never used             @typescript-eslint/no-unused-vars
+   32:33  error    Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+   66:11  warning  'activeIndex' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  257:35  warning  'isLast' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\bookings\page.tsx
+   8:3   warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+  13:11  warning  'HomeIcon' is defined but never used      @typescript-eslint/no-unused-vars
+  15:3   warning  'Eye' is defined but never used           @typescript-eslint/no-unused-vars
+  17:3   warning  'Filter' is defined but never used        @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\health-records\page.tsx
+   4:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+   7:3   warning  'Filter' is defined but never used           @typescript-eslint/no-unused-vars
+  17:3   warning  'Search' is defined but never used           @typescript-eslint/no-unused-vars
+  20:3   warning  'Calendar' is defined but never used         @typescript-eslint/no-unused-vars
+  22:3   warning  'Sparkles' is defined but never used         @typescript-eslint/no-unused-vars
+  23:3   warning  'Info' is defined but never used             @typescript-eslint/no-unused-vars
+  25:3   warning  'Navigation' is defined but never used       @typescript-eslint/no-unused-vars
+  32:42  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\notifications\page.tsx
+  12:3   warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  15:3   warning  'Search' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  18:3   warning  'Zap' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  24:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  38:16  error    Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\notifications\page.tsx:38:16
+  36 |   if (!mounted) return <span className="text-[10px] font-black text-text-light shrink-0 uppercase tracking-widest">...</span>;
+  37 |
+> 38 |   const diff = Date.now() - new Date(timestamp).getTime();
+     |                ^^^^^^^^^^ Cannot call impure function
+  39 |   const min = Math.floor(diff / 60000);
+  40 |   let timeStr = "";
+  41 |   if (min < 60) timeStr = `${min}m ago`;  react-hooks/purity
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\page.tsx
+   12:3    warning  'CheckCircle' is defined but never used                          @typescript-eslint/no-unused-vars
+   13:3    warning  'XCircle' is defined but never used                              @typescript-eslint/no-unused-vars
+   15:3    warning  'Home' is defined but never used                                 @typescript-eslint/no-unused-vars
+   17:3    warning  'TrendingUp' is defined but never used                           @typescript-eslint/no-unused-vars
+   20:3    warning  'Heart' is defined but never used                                @typescript-eslint/no-unused-vars
+   21:3    warning  'Star' is defined but never used                                 @typescript-eslint/no-unused-vars
+   22:3    warning  'Zap' is defined but never used                                  @typescript-eslint/no-unused-vars
+   26:3    warning  'Stethoscope' is defined but never used                          @typescript-eslint/no-unused-vars
+   27:3    warning  'Microscope' is defined but never used                           @typescript-eslint/no-unused-vars
+   30:3    warning  'Shield' is defined but never used                               @typescript-eslint/no-unused-vars
+   32:3    warning  'ClipboardCheck' is defined but never used                       @typescript-eslint/no-unused-vars
+   33:3    warning  'LayoutDashboard' is defined but never used                      @typescript-eslint/no-unused-vars
+   34:3    warning  'Smartphone' is defined but never used                           @typescript-eslint/no-unused-vars
+   36:3    warning  'Target' is defined but never used                               @typescript-eslint/no-unused-vars
+   41:10   warning  'labs' is defined but never used                                 @typescript-eslint/no-unused-vars
+  145:174  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  145:202  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  219:18   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  243:24   warning  'i' is defined but never used                                    @typescript-eslint/no-unused-vars
+  306:55   warning  'i' is defined but never used                                    @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\payments\page.tsx
+   8:3  warning  'CheckCircle' is defined but never used   @typescript-eslint/no-unused-vars
+   9:3  warning  'XCircle' is defined but never used       @typescript-eslint/no-unused-vars
+  11:3  warning  'ArrowRight' is defined but never used    @typescript-eslint/no-unused-vars
+  13:3  warning  'Zap' is defined but never used           @typescript-eslint/no-unused-vars
+  18:3  warning  'ArrowUpRight' is defined but never used  @typescript-eslint/no-unused-vars
+  19:3  warning  'FileText' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\prescriptions\page.tsx
+   6:3    warning  'Upload' is defined but never used                               @typescript-eslint/no-unused-vars
+   9:3    warning  'X' is defined but never used                                    @typescript-eslint/no-unused-vars
+  11:3    warning  'CheckCircle' is defined but never used                          @typescript-eslint/no-unused-vars
+  15:3    warning  'Star' is defined but never used                                 @typescript-eslint/no-unused-vars
+  16:3    warning  'Plus' is defined but never used                                 @typescript-eslint/no-unused-vars
+  18:3    warning  'Cpu' is defined but never used                                  @typescript-eslint/no-unused-vars
+  21:3    warning  'Search' is defined but never used                               @typescript-eslint/no-unused-vars
+  23:3    warning  'Info' is defined but never used                                 @typescript-eslint/no-unused-vars
+  34:10   warning  'newFile' is assigned a value but never used                     @typescript-eslint/no-unused-vars
+  63:64   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  98:131  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\profile\page.tsx
+    9:3   warning  'Shield' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   18:3   warning  'CircleCheck' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   43:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\profile\page.tsx:43:7
+  41 |   useEffect(() => {
+  42 |     if (tabParam && ["personal", "addresses", "security", "notifications"].includes(tabParam)) {
+> 43 |       setActiveTab(tabParam);
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |     }
+  45 |   }, [tabParam]);
+  46 |   const fileInputRef = useRef<HTMLInputElement>(null);  react-hooks/set-state-in-effect
+   59:56  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   65:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\profile\page.tsx:65:5
+  63 |   // Sync Local State with Context user when it changes
+  64 |   useEffect(() => {
+> 65 |     setPersonalInfo({
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  66 |       name: user.name,
+  67 |       phone: user.phone,
+  68 |       age: user.age,                                                            react-hooks/set-state-in-effect
+   72:6   warning  React Hook useEffect has a missing dependency: 'personalInfo.panCard'. Either include it or remove the dependency array. You can also replace multiple useState variables with useReducer if 'setPersonalInfo' needs the current value of 'personalInfo.panCard'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+   88:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  420:51  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\reports\page.tsx
+   10:3   warning  'Share2' is defined but never used                               @typescript-eslint/no-unused-vars
+   18:3   warning  'ArrowDown' is defined but never used                            @typescript-eslint/no-unused-vars
+  226:68  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\dashboard\vault\page.tsx
+    9:3    warning  'Upload' is defined but never used                               @typescript-eslint/no-unused-vars
+   14:3    warning  'MoreVertical' is defined but never used                         @typescript-eslint/no-unused-vars
+   17:3    warning  'Calendar' is defined but never used                             @typescript-eslint/no-unused-vars
+   23:3    warning  'ChevronRight' is defined but never used                         @typescript-eslint/no-unused-vars
+   78:89   error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  354:117  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\faq\page.tsx
+    7:3    warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   36:113  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-explicit-any
+  147:32   error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `t`, but the source dependencies were [searchQuery, activeCategory]. Inferred different dependency than source.
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\faq\page.tsx:147:32
+  145 |   ];
+  146 |
+> 147 |   const filteredFaqs = useMemo(() => {
+      |                                ^^^^^^^
+> 148 |     return faqs.filter(faq => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 149 |       const matchesSearch = faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 150 |                            faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 151 |       const matchesCategory = activeCategory === "all" || faq.category === activeCategory;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 152 |       return matchesSearch && matchesCategory;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 153 |     });
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 154 |   }, [searchQuery, activeCategory]);
+      | ^^^^ Could not preserve existing manual memoization
+  155 |
+  156 |   return (
+  157 |     <div className="bg-[#FDFDFD] min-h-screen pt-[120px] pb-24 relative overflow-hidden">  react-hooks/preserve-manual-memoization
+  154:6    warning  React Hook useMemo has a missing dependency: 'faqs'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             react-hooks/exhaustive-deps
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\labs\[id]\page.tsx
+  100:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\labs\[id]\page.tsx:100:7
+   98 |   useEffect(() => {
+   99 |     if (urlQuery && !testSearch) {
+> 100 |       setTestSearch(urlQuery);
+      |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  101 |     }
+  102 |   }, [urlQuery, testSearch]);
+  103 |  react-hooks/set-state-in-effect
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\maintenance\page.tsx
+    5:18  warning  'AnimatePresence' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    5:86  warning  'MotionValue' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    8:3   warning  'Settings' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+    9:3   warning  'Clock' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   66:66  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+   66:80  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  115:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\maintenance\page.tsx:115:5
+  113 |   
+  114 |   useEffect(() => {
+> 115 |     setMounted(true);
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  116 |   }, []);
+  117 |
+  118 |   useEffect(() => {  react-hooks/set-state-in-effect
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\map\page.tsx
+   8:3  warning  'Home' is defined but never used          @typescript-eslint/no-unused-vars
+   9:3  warning  'ShieldCheck' is defined but never used   @typescript-eslint/no-unused-vars
+  15:3  warning  'ArrowUpRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\page.tsx
+  354:45  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\partnership\page.tsx
+   3:8  warning  'Image' is defined but never used                @typescript-eslint/no-unused-vars
+   4:8  warning  'AnimatedPartnerLink' is defined but never used  @typescript-eslint/no-unused-vars
+  11:3  warning  'Building2' is defined but never used            @typescript-eslint/no-unused-vars
+  13:3  warning  'Zap' is defined but never used                  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\privacy\page.tsx
+  4:39  warning  'Globe' is defined but never used         @typescript-eslint/no-unused-vars
+  4:75  warning  'ChevronRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\register\page.tsx
+  6:52  warning  'Phone' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\search\page.tsx
+   13:3   warning  'Clock' is defined but never used                @typescript-eslint/no-unused-vars
+   20:26  warning  'popularTests' is defined but never used         @typescript-eslint/no-unused-vars
+  154:9   warning  'totalTests' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\terms\page.tsx
+  11:3  warning  'Mail' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\verify-otp\page.tsx
+  24:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\app\verify-otp\page.tsx:24:7
+  22 |       return () => clearTimeout(t);
+  23 |     } else {
+> 24 |       setCanResend(true);
+     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |     }
+  26 |   }, [timer]);
+  27 |  react-hooks/set-state-in-effect
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\dashboard\BookingActions.tsx
+  15:3   warning  'MapPin' is defined but never used        @typescript-eslint/no-unused-vars
+  57:32  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\dashboard\DashboardSidebar.tsx
+  13:3   warning  'Shield' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  16:3   warning  'Headphones' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  22:3   warning  'Sparkles' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  23:3   warning  'Zap' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  24:3   warning  'Activity' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  25:3   warning  'ShieldCheck' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  26:3   warning  'Smartphone' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  27:3   warning  'Info' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  30:10  warning  'motion' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  69:11  warning  'user' is assigned a value but never used                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  80:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\dashboard\DashboardTopbar.tsx
+  63:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\dashboard\DashboardTopbar.tsx:63:5
+  61 |
+  62 |   useEffect(() => {
+> 63 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  64 |     const updateTime = () => {
+  65 |       const diff = Date.now() - new Date(timestamp).getTime();
+  66 |       const min = Math.floor(diff / 60000);  react-hooks/set-state-in-effect
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\layout\Navbar.tsx
+  12:32  warning  'Menu' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  12:38  warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  41:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\layout\Navbar.tsx:41:5
+  39 |   /* close menu on route change */
+  40 |   useEffect(() => {
+> 41 |     setIsMobileMenuOpen(false);
+     |     ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |   }, [pathname]);
+  43 |
+  44 |   const closeMobileMenu = () => {  react-hooks/set-state-in-effect
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\pdf\BookingReceiptPDF.tsx
+   4:23  warning  'ShieldCheck' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   4:56  warning  'MapPin' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   4:74  warning  'Clock' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  50:9   warning  'brandColor' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  63:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\ui\AnimatedPartnerLink.tsx
+  4:10  warning  'cn' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\ui\LanguageSelector.tsx
+  30:9  warning  'currentLanguage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\ui\Modal.tsx
+  20:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\ui\Modal.tsx:20:5
+  18 |
+  19 |   useEffect(() => {
+> 20 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  21 |     
+  22 |     if (isOpen) {
+  23 |       document.body.style.overflow = "hidden";  react-hooks/set-state-in-effect
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\components\ui\Toast.tsx
+  3:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\context\LanguageContext.tsx
+  22:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\context\LanguageContext.tsx:22:7
+  20 |     const savedLocale = localStorage.getItem("meddynet_language") as Locale;
+  21 |     if (savedLocale && Object.keys(translations).includes(savedLocale)) {
+> 22 |       setLocaleState(savedLocale);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  23 |     }
+  24 |   }, []);
+  25 |  react-hooks/set-state-in-effect
+  36:18  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+  60:18  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-explicit-any
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\context\UserContext.tsx
+  92:21  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\ashwi\.gemini\antigravity\scratch\MeddyNet\src\context\UserContext.tsx:92:21
+  90 |     const storedItems = localStorage.getItem("meddynet_notification_items");
+  91 |
+> 92 |     if (storedUser) setUser(JSON.parse(storedUser) as UserProfile);
+     |                     ^^^^^^^ Avoid calling setState() directly within an effect
+  93 |     if (storedAddresses) setAddresses(JSON.parse(storedAddresses) as Address[]);
+  94 |     if (storedNotifications) setNotifications(JSON.parse(storedNotifications) as UserContextType["notifications"]);
+  95 |     if (storedItems) setNotificationItems(JSON.parse(storedItems) as NotificationItem[]);  react-hooks/set-state-in-effect
+
+Γ£û 155 problems (33 errors, 122 warnings)
+
