@@ -14,15 +14,20 @@ from app.utils.session_context import get_current_user_id
 
 Base = declarative_base()
 
-pg_engine = create_async_engine(
-    db_url,
-    echo=False,
-    future=True,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-    connect_args={"ssl": True} if "neon.tech" in db_url else {},
-)
+engine_args = {
+    "echo": False,
+    "future": True,
+}
+
+if "sqlite" not in db_url:
+    engine_args["pool_pre_ping"] = True
+    engine_args["pool_size"] = 10
+    engine_args["max_overflow"] = 20
+
+if "neon.tech" in db_url:
+    engine_args["connect_args"] = {"ssl": True}
+
+pg_engine = create_async_engine(db_url, **engine_args)
 
 # FIX 11: Module-level singleton — previously recreated on every request inside get_db()
 AsyncSessionLocal = async_sessionmaker(pg_engine, class_=AsyncSession, expire_on_commit=False, autoflush=False)

@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -19,7 +19,7 @@ class SubscriptionPlan(str, enum.Enum):
 class Lab(Base):
     __tablename__ = "labs"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(200), nullable=False)
     slug = Column(String(100), unique=True, nullable=False, index=True)
     phone = Column(String(15), nullable=False)
@@ -59,8 +59,8 @@ class Lab(Base):
 class LabTest(Base):
     __tablename__ = "lab_tests"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id", ondelete="CASCADE"))
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lab_id = Column(Uuid(as_uuid=True), ForeignKey("labs.id", ondelete="CASCADE"))
 
     name = Column(String(200), nullable=False)
     category = Column(String(100), nullable=False)

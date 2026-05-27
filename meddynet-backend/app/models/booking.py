@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Enum, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -29,10 +29,10 @@ class BookingStatus(str, enum.Enum):
 class Booking(Base):
     __tablename__ = "bookings"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"), nullable=False)
-    technician_id = Column("tech_id", UUID(as_uuid=True), ForeignKey("technicians.id"), nullable=True)
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    lab_id = Column(Uuid(as_uuid=True), ForeignKey("labs.id"), nullable=False)
+    technician_id = Column("tech_id", Uuid(as_uuid=True), ForeignKey("technicians.id"), nullable=True)
 
     type = Column(Enum(BookingType), nullable=False)
     status = Column(Enum(BookingStatus), default=BookingStatus.pending)
@@ -63,9 +63,9 @@ class Booking(Base):
 class BookingTest(Base):
     __tablename__ = "booking_tests"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id = Column(UUID(as_uuid=True), ForeignKey("bookings.id", ondelete="CASCADE"))
-    lab_test_id = Column(UUID(as_uuid=True), ForeignKey("lab_tests.id"))
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_id = Column(Uuid(as_uuid=True), ForeignKey("bookings.id", ondelete="CASCADE"))
+    lab_test_id = Column(Uuid(as_uuid=True), ForeignKey("lab_tests.id"))
 
     price_at_booking = Column(Integer, nullable=False)
 

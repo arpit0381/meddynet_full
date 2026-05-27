@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 
 from app.database import Base
 
@@ -23,10 +23,10 @@ class LedgerType(str, enum.Enum):
 class Payment(Base):
     __tablename__ = "payments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id = Column(UUID(as_uuid=True), ForeignKey("bookings.id"), unique=True, nullable=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"))
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_id = Column(Uuid(as_uuid=True), ForeignKey("bookings.id"), unique=True, nullable=True)
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"))
+    lab_id = Column(Uuid(as_uuid=True), ForeignKey("labs.id"))
 
     razorpay_order_id = Column(String(100), unique=True, nullable=False)
     razorpay_payment_id = Column(String(100), unique=True, nullable=True)
@@ -47,7 +47,7 @@ class Payment(Base):
 class LabWallet(Base):
     __tablename__ = "lab_wallets"
 
-    lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"), primary_key=True)
+    lab_id = Column(Uuid(as_uuid=True), ForeignKey("labs.id"), primary_key=True)
     pending_balance = Column(Integer, default=0, nullable=False)
     total_earned = Column(Integer, default=0, nullable=False)
     total_paid_out = Column(Integer, default=0, nullable=False)
@@ -62,14 +62,14 @@ class LabWallet(Base):
 class Ledger(Base):
     __tablename__ = "ledger"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"))
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lab_id = Column(Uuid(as_uuid=True), ForeignKey("labs.id"))
 
     type = Column(Enum(LedgerType), nullable=False)
     amount = Column(Integer, nullable=False)
 
     reference_type = Column(String(50), nullable=False)  # payment | refund | payout | adjustment
-    reference_id = Column(UUID(as_uuid=True), nullable=False)
+    reference_id = Column(Uuid(as_uuid=True), nullable=False)
     description = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

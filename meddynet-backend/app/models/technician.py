@@ -2,7 +2,7 @@ import enum
 import uuid
 
 from sqlalchemy import Boolean, Column, Enum, Float, ForeignKey, String
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 
 from app.database import Base
 
@@ -23,9 +23,9 @@ class TechnicianStatus(str, enum.Enum):
 class Technician(Base):
     __tablename__ = "technicians"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lab_id = Column(UUID(as_uuid=True), ForeignKey("labs.id"))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lab_id = Column(Uuid(as_uuid=True), ForeignKey("labs.id"))
+    user_id = Column(Uuid(as_uuid=True), ForeignKey("users.id"))
 
     name = Column(String(100), nullable=False)
     phone = Column(String(15), unique=True, nullable=False)
