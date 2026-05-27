@@ -21,6 +21,7 @@ python-dotenv==1.0.*
 cryptography
 pytest
 pytest-asyncio
+aiosqlite
 factory-boy
 cloudinary==1.41.0
 passlib[bcrypt]==1.7.4
