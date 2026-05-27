@@ -1,9 +1,10 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
-from app.services.mongo_service import mongo_service
+from fastapi import APIRouter, Depends, HTTPException
+
 from app.middleware.rbac import get_current_user
+from app.services.mongo_service import mongo_service
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 logger = logging.getLogger(__name__)

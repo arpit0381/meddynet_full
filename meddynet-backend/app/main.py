@@ -1,37 +1,35 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from slowapi import _rate_limit_exceeded_handler
-from slowapi.errors import RateLimitExceeded
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+import logging
 from contextlib import asynccontextmanager
 
-from app.config import settings
-from app.redis import limiter
-from app.middleware.auth_middleware import AuthMiddleware
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
+from app.config import settings
+from app.middleware.auth_middleware import AuthMiddleware
+from app.redis import limiter
 from app.routers import (
-    auth,
-    users,
-    labs,
-    bookings,
-    technicians,
-    payments,
-    webhooks,
-    reports,
-    notifications,
-    lab_portal,
-    technician_portal,
     admin_portal,
-    payouts,
+    auth,
+    bookings,
     diagnostics,
     health_records,
+    lab_portal,
+    labs,
+    notifications,
+    payments,
+    payouts,
+    reports,
+    technician_portal,
+    technicians,
+    users,
+    webhooks,
 )
-
-from app.websocket import router as ws_router
 from app.services.mongo_service import mongo_service
-
-import logging
+from app.websocket import router as ws_router
 
 logger = logging.getLogger(__name__)
 
@@ -156,8 +154,9 @@ async def readiness_check():
 
     # Postgres
     try:
-        from app.database import get_db, engine
         from sqlalchemy import text
+
+        from app.database import engine, get_db
 
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))

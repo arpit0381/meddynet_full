@@ -3,9 +3,10 @@ MeddyNet Backend — Test Configuration
 Shared fixtures for all tests.
 """
 
-import pytest
-import httpx
 from unittest.mock import AsyncMock, MagicMock
+
+import httpx
+import pytest
 
 
 # The app import must be lazy to avoid triggering DB connections in test collection
@@ -20,7 +21,7 @@ def app():
 @pytest.fixture
 async def client(app):
     """Create an async HTTP client for testing endpoints."""
-    from httpx import AsyncClient, ASGITransport
+    from httpx import ASGITransport, AsyncClient
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

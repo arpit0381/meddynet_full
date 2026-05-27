@@ -1,6 +1,8 @@
-from fastapi import UploadFile
-from app.services.supabase_storage_service import storage_service
 import logging
+
+from fastapi import UploadFile
+
+from app.services.supabase_storage_service import storage_service
 
 logger = logging.getLogger(__name__)
 

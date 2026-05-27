@@ -1,8 +1,10 @@
 import logging
+from typing import Optional
+
 import cloudinary
 import cloudinary.uploader
 from fastapi import UploadFile
-from typing import Optional
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)

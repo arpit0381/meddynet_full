@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
 from app.config import settings
@@ -8,6 +9,7 @@ from app.config import settings
 db_url = settings.NEON_DATABASE_URL if settings.NEON_DATABASE_URL else settings.DATABASE_URL
 
 from sqlalchemy import text
+
 from app.utils.session_context import get_current_user_id
 
 Base = declarative_base()

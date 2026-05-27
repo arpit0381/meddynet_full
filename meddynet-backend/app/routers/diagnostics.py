@@ -1,13 +1,15 @@
 import logging
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
-from app.database import get_db
-from app.services.mongo_service import mongo_service
-from app.services.auth_service import supabase_admin
-from app.redis import redis_client
-from app.config import settings
 import time
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.config import settings
+from app.database import get_db
+from app.redis import redis_client
+from app.services.auth_service import supabase_admin
+from app.services.mongo_service import mongo_service
 
 router = APIRouter(prefix="/diagnostics", tags=["System Diagnostics"])
 logger = logging.getLogger(__name__)

@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from typing import List, Optional
-import uuid
 import json
 import logging
+import uuid
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app.database import get_db
-from app.models.health_record import HealthRecord
 from app.middleware.rbac import get_current_user
+from app.models.health_record import HealthRecord
 from app.services.supabase_storage_service import storage_service
 
 logger = logging.getLogger(__name__)

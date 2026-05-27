@@ -1,8 +1,10 @@
 import uuid
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
+
 from pydantic import BaseModel
-from app.models.booking import BookingType, BookingStatus
+
+from app.models.booking import BookingStatus, BookingType
 
 
 class BookingTestCreate(BaseModel):

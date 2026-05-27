@@ -1,5 +1,6 @@
+from typing import Any, Dict, Optional
+
 from app.services.mongo_service import mongo_service
-from typing import Dict, Any, Optional
 
 
 class AnalyticsService:

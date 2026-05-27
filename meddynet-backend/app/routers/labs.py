@@ -1,14 +1,15 @@
 import logging
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from typing import List
 
 from app.database import get_db
-from app.schemas.lab import LabResponse, LabCreate
-from app.models.lab import Lab
 from app.middleware.rbac import require_role
+from app.models.lab import Lab
+from app.schemas.lab import LabCreate, LabResponse
 
 router = APIRouter(prefix="/labs", tags=["labs"])
 logger = logging.getLogger(__name__)
@@ -58,8 +59,9 @@ async def list_labs(
         labs = sorted(labs, key=lambda x: x.distance)
 
     # Dynamic Ratings from Reviews
-    from app.models.review import Review
     from sqlalchemy import func
+
+    from app.models.review import Review
 
     lab_ids = [lab.id for lab in labs]
     if lab_ids:
@@ -90,8 +92,9 @@ async def get_lab(lab_id: str, db: AsyncSession = Depends(get_db)):
     lab = result.scalar_one_or_none()
     if not lab:
         raise HTTPException(status_code=404, detail="Lab not found")
-    from app.models.review import Review
     from sqlalchemy import func
+
+    from app.models.review import Review
 
     rev_res = await db.execute(
         select(func.avg(Review.rating).label("avg_r"), func.count(Review.id).label("c")).filter(Review.lab_id == lab.id)
@@ -128,8 +131,9 @@ async def search_labs(q: str = Query(None), city: str = Query(None), db: AsyncSe
     labs = result.scalars().all()
 
     # Dynamic Ratings
-    from app.models.review import Review
     from sqlalchemy import func
+
+    from app.models.review import Review
 
     lab_ids = [lab.id for lab in labs]
     if lab_ids:

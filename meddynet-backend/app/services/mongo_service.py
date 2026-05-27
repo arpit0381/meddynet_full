@@ -1,8 +1,10 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-import certifi
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
+import certifi
+from motor.motor_asyncio import AsyncIOMotorClient
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)

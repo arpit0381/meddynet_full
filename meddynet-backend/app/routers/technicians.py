@@ -1,13 +1,14 @@
 import logging
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from typing import List
 
 from app.database import get_db
-from app.schemas.technician import TechnicianResponse, TechnicianCreate
-from app.models.technician import Technician, TechnicianStatus
 from app.middleware.rbac import require_role
+from app.models.technician import Technician, TechnicianStatus
+from app.schemas.technician import TechnicianCreate, TechnicianResponse
 
 router = APIRouter(prefix="/technicians", tags=["technicians"])
 logger = logging.getLogger(__name__)

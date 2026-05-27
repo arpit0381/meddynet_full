@@ -1,19 +1,20 @@
 import logging
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-import uuid
 
 from app.database import get_db
-from app.schemas.payment import PaymentCreate, PaymentVerify, DepositCreate
-from app.models.payment import Payment, PaymentStatus
+from app.middleware.rbac import get_current_user
 from app.models.booking import Booking, BookingStatus
 from app.models.lab import Lab
+from app.models.payment import Payment, PaymentStatus
 from app.models.user import User
-from app.middleware.rbac import get_current_user
+from app.schemas.payment import DepositCreate, PaymentCreate, PaymentVerify
+from app.services.mongo_service import mongo_service
 from app.services.payment_service import payment_service
 from app.services.wallet_service import update_lab_wallet_on_payment
-from app.services.mongo_service import mongo_service
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 logger = logging.getLogger(__name__)

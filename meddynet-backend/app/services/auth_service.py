@@ -1,9 +1,11 @@
 import logging
 import random
 from datetime import datetime, timedelta, timezone
+
 from jose import jwt
-from supabase import create_client, Client
 from pydantic import EmailStr
+from supabase import Client, create_client
+
 from app.config import settings
 from app.models.user import User
 from app.redis import redis_client

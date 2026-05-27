@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.payment import LabWallet, Ledger, LedgerType
 from sqlalchemy.future import select
+
+from app.models.payment import LabWallet, Ledger, LedgerType
 
 
 async def update_lab_wallet_on_payment(

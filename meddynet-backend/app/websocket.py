@@ -1,7 +1,8 @@
-import json
 import asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+import json
 from typing import Dict, Set
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.redis import redis_client
 
@@ -84,9 +85,10 @@ async def websocket_endpoint(websocket: WebSocket, client_type: str, client_id: 
                 ticket_id = payload.get("ticket_id")
                 if ticket_id:
                     # FIX 2: Replaced broken 'async_session' import with 'SessionLocal'
+                    from sqlalchemy.future import select
+
                     from app.database import SessionLocal
                     from app.models.booking import Booking
-                    from sqlalchemy.future import select
 
                     async with SessionLocal() as db:
                         res = await db.execute(select(Booking).filter(Booking.id == ticket_id))

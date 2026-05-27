@@ -1,8 +1,9 @@
 import logging
-from app.services.auth_service import supabase, supabase_admin
 
 from fastapi import UploadFile
+
 from app.config import settings
+from app.services.auth_service import supabase, supabase_admin
 
 logger = logging.getLogger(__name__)
 

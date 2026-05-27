@@ -1,38 +1,39 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request, File, UploadFile
+import logging
+import uuid
+
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
-from pydantic import BaseModel
-import uuid
-import logging
 
 logger = logging.getLogger(__name__)
 
 from app.database import get_db
-from app.schemas.auth import (
-    SendOTPRequest,
-    VerifyOTPRequest,
-    TokenResponse,
-    RefreshTokenRequest,
-    LoginRequest,
-    RegisterRequest,
-    LabOnboardingRequest,
-)
-from app.models.user import User
+from app.middleware.rbac import get_current_user
 from app.models.lab import Lab
 from app.models.payment import LabWallet
+from app.models.user import User
+from app.redis import limiter, redis_client
+from app.schemas.auth import (
+    LabOnboardingRequest,
+    LoginRequest,
+    RefreshTokenRequest,
+    RegisterRequest,
+    SendOTPRequest,
+    TokenResponse,
+    VerifyOTPRequest,
+)
 from app.services.auth_service import (
-    send_otp,
-    verify_otp,
+    blacklist_token,
     create_access_token,
     create_refresh_token,
-    blacklist_token,
-    verify_password,
     get_password_hash,
+    send_otp,
+    verify_otp,
+    verify_password,
 )
 from app.services.notification_service import notification_service
-from app.middleware.rbac import get_current_user
-from app.redis import limiter, redis_client
 from app.services.supabase_storage_service import storage_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])

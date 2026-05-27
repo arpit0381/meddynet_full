@@ -1,6 +1,6 @@
-from fastapi import Request, HTTPException, status
+from typing import List, Union
 
-from typing import Union, List
+from fastapi import HTTPException, Request, status
 
 
 def require_role(required_roles: Union[str, List[str]]):

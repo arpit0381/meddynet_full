@@ -1,14 +1,15 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 import uuid
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
 from typing import List
 
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
 from app.database import get_db
-from app.schemas.user import UserResponse, UserBase
-from app.models.user import User
 from app.middleware.rbac import get_current_user
+from app.models.user import User
+from app.schemas.user import UserBase, UserResponse
 from app.services.cloudinary_service import upload_image_to_cloudinary
 
 router = APIRouter(prefix="/users", tags=["users"])

@@ -1,20 +1,21 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy import func
-from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlalchemy import func
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
 from app.database import get_db
+from app.middleware.rbac import get_current_user, require_role
 from app.models.booking import Booking, BookingStatus
 from app.models.technician import Technician, TechnicianStatus
-from app.middleware.rbac import get_current_user, require_role
 from app.schemas.booking import BookingResponse
 from app.schemas.technician import LocationUpdate
-from app.services.report_service import upload_report_to_supabase
 from app.services.mongo_service import mongo_service
+from app.services.report_service import upload_report_to_supabase
 
 router = APIRouter(prefix="/technician", tags=["technician-portal"])
 logger = logging.getLogger(__name__)

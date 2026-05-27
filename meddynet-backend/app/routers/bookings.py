@@ -1,24 +1,25 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query
+import logging
+import uuid
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from typing import List, Optional, Dict
-import uuid
-import logging
-from datetime import datetime, timezone
 
 from app.database import get_db
+from app.middleware.rbac import get_current_user, require_role
+from app.models.booking import Booking, BookingStatus, BookingTest, BookingType
+from app.models.lab import Lab, LabTest
+from app.models.payment import Payment, PaymentStatus
+from app.models.technician import Technician
+from app.models.user import User
 from app.schemas.booking import BookingCreate, BookingResponse, LabQuickScheduleRequest
 from app.schemas.technician import TrackingResponse
-from app.models.booking import Booking, BookingTest, BookingStatus, BookingType
-from app.models.technician import Technician
-from app.models.lab import Lab, LabTest
-from app.models.user import User
-from app.models.payment import Payment, PaymentStatus
-from app.middleware.rbac import require_role, get_current_user
 from app.services.mongo_service import mongo_service
-from app.services.payment_service import payment_service
 from app.services.notification_service import notification_service
+from app.services.payment_service import payment_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/bookings", tags=["bookings"])

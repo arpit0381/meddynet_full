@@ -1,9 +1,9 @@
 from fastapi import Request
+from jose import JWTError, jwt
 from starlette.middleware.base import BaseHTTPMiddleware
-from jose import jwt, JWTError
+
 from app.config import settings
 from app.services.mongo_service import mongo_service
-
 from app.utils.session_context import set_current_user_id
 
 

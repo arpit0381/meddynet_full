@@ -1,20 +1,21 @@
+import uuid
+from typing import Dict, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
-from typing import List, Dict, Optional
-import uuid
 
 from app.database import get_db
-from app.models.booking import Booking, BookingStatus
-from app.models.payment import Payment, PaymentStatus, LabWallet, Ledger
-from app.models.lab import Lab, LabTest
-from app.models.technician import Technician, ShiftType, TechnicianStatus
-from app.models.user import User
 from app.middleware.rbac import get_current_user, require_role
+from app.models.booking import Booking, BookingStatus
+from app.models.lab import Lab, LabTest
+from app.models.payment import LabWallet, Ledger, Payment, PaymentStatus
+from app.models.technician import ShiftType, Technician, TechnicianStatus
+from app.models.user import User
 from app.schemas.booking import BookingResponse
 from app.services.auth_service import get_password_hash
-from pydantic import BaseModel
 
 
 class LabUpdate(BaseModel):
@@ -197,6 +198,7 @@ async def get_lab_earnings(lab_id: str = Depends(get_current_lab_id), db: AsyncS
 @router.get("/labs/me/bookings")
 async def get_lab_bookings(lab_id: uuid.UUID = Depends(get_current_lab_id), db: AsyncSession = Depends(get_db)):
     from sqlalchemy.orm import selectinload
+
     from app.models.booking import BookingTest
     from app.models.report import Report
 

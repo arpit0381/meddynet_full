@@ -10,6 +10,7 @@ import asyncio
 import logging
 import re
 from datetime import datetime, timezone
+
 from app.celery_app import celery_app
 from app.services.analytics_service import analytics_service
 

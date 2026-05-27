@@ -1,13 +1,15 @@
 import asyncio
-from app.celery_app import celery_app
 import logging
-from app.database import SessionLocal
+import uuid
+
 from sqlalchemy.future import select
+
+from app.celery_app import celery_app
+from app.database import SessionLocal
 from app.models.payment import LabWallet
+from app.services.analytics_service import analytics_service
 from app.services.payment_service import payment_service
 from app.services.wallet_service import deduct_lab_wallet_for_payout
-from app.services.analytics_service import analytics_service
-import uuid
 
 logger = logging.getLogger(__name__)
 
