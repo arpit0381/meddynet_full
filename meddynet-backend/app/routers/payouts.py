@@ -1,17 +1,15 @@
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.database import get_db
-from app.middleware.rbac import get_current_user, require_role
+from app.middleware.rbac import require_role
 from app.models.lab import Lab
 from app.models.payment import LabWallet, Ledger, LedgerType
-from app.models.user import User
 from app.services.payment_service import payment_service
 
 logger = logging.getLogger(__name__)

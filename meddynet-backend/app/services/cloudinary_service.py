@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import cloudinary
 import cloudinary.uploader
@@ -26,7 +25,7 @@ async def upload_image_to_cloudinary(file: UploadFile, folder: str = "meddynet/p
     """
     if not (settings.CLOUDINARY_CLOUD_NAME and settings.CLOUDINARY_API_KEY):
         # Fallback for dev environments without Cloudinary configured
-        return f"https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
+        return "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
 
     try:
         contents = await file.read()

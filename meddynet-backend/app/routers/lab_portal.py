@@ -8,13 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.database import get_db
-from app.middleware.rbac import get_current_user, require_role
+from app.middleware.rbac import require_role
 from app.models.booking import Booking, BookingStatus
 from app.models.lab import Lab, LabTest
 from app.models.payment import LabWallet, Ledger, Payment, PaymentStatus
 from app.models.technician import ShiftType, Technician, TechnicianStatus
 from app.models.user import User
-from app.schemas.booking import BookingResponse
 from app.services.auth_service import get_password_hash
 
 
@@ -98,7 +97,7 @@ async def get_lab_stats(lab_id: str = Depends(get_current_lab_id), db: AsyncSess
 
     # 4. New Patients (Unique users)
     patients_count_res = await db.execute(
-        select(func.count(func.distinct(Booking.user_id))).filter(Booking.user_id != None, Booking.lab_id == lab.id)
+        select(func.count(func.distinct(Booking.user_id))).filter(Booking.user_id is not None, Booking.lab_id == lab.id)
     )
     total_patients = patients_count_res.scalar() or 0
 

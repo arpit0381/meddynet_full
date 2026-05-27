@@ -48,7 +48,7 @@ async def deduct_lab_wallet_for_payout(lab_id, payout_amount_paise: int, payout_
         amount=payout_amount_paise,
         reference_type="payout",
         reference_id=payout_id,
-        description=f"Automated Payout to verified bank account via RazorpayX",
+        description="Automated Payout to verified bank account via RazorpayX",
     )
     db.add(ledger)
 
@@ -67,6 +67,6 @@ async def deduct_lab_wallet_for_refund(lab_id, refund_amount_paise: int, refund_
             amount=refund_amount_paise,
             reference_type="refund",
             reference_id=refund_id,
-            description=f"Refund adjustment for cancelled booking",
+            description="Refund adjustment for cancelled booking",
         )
         db.add(ledger)

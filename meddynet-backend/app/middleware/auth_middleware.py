@@ -28,7 +28,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     # 3. Security Hardening: Direct is_active Enforcement
                     # If is_active is encoded in JWT, we can skip DB hit for performance
                     # but for 10000% immediate effect, we'll rely on the payload pulse.
-                    if payload.get("is_active") == False:
+                    if payload.get("is_active") is False:
                         request.state.user = None
                     else:
                         request.state.user = payload

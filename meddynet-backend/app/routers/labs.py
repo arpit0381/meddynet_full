@@ -7,9 +7,8 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.middleware.rbac import require_role
 from app.models.lab import Lab
-from app.schemas.lab import LabCreate, LabResponse
+from app.schemas.lab import LabResponse
 
 router = APIRouter(prefix="/labs", tags=["labs"])
 logger = logging.getLogger(__name__)
@@ -24,7 +23,7 @@ async def list_labs(
     home_collection: bool = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
-    query = select(Lab).filter(Lab.is_active == True)
+    query = select(Lab).filter(Lab.is_active is True)
     if city:
         query = query.filter(Lab.city.ilike(f"%{city}%"))
     if is_nabl is not None:
@@ -113,7 +112,7 @@ async def search_labs(q: str = Query(None), city: str = Query(None), db: AsyncSe
     """
     from app.models.lab import LabTest
 
-    query = select(Lab).filter(Lab.is_active == True)
+    query = select(Lab).filter(Lab.is_active is True)
 
     if city:
         query = query.filter(Lab.city.ilike(f"%{city}%"))

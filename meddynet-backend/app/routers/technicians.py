@@ -8,7 +8,7 @@ from sqlalchemy.future import select
 from app.database import get_db
 from app.middleware.rbac import require_role
 from app.models.technician import Technician, TechnicianStatus
-from app.schemas.technician import TechnicianCreate, TechnicianResponse
+from app.schemas.technician import TechnicianResponse
 
 router = APIRouter(prefix="/technicians", tags=["technicians"])
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ async def list_technicians(
     db: AsyncSession = Depends(get_db),
     admin=Depends(require_role("superadmin")),  # Strict validation in production
 ):
-    query = select(Technician).filter(Technician.is_active == True)
+    query = select(Technician).filter(Technician.is_active is True)
     if lab_id:
         query = query.filter(Technician.lab_id == lab_id)
 

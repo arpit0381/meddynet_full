@@ -1,7 +1,7 @@
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +9,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.middleware.rbac import get_current_user, require_role
+from app.middleware.rbac import get_current_user
 from app.models.booking import Booking, BookingStatus, BookingTest, BookingType
 from app.models.lab import Lab, LabTest
 from app.models.payment import Payment, PaymentStatus
@@ -236,7 +236,7 @@ async def lab_quick_schedule(
     try:
         await db.commit()
         await db.refresh(new_booking)
-    except Exception as e:
+    except Exception:
         await db.rollback()
         raise HTTPException(status_code=500, detail="Failed to save schedule. Please try again.")
 

@@ -156,7 +156,7 @@ async def readiness_check():
     try:
         from sqlalchemy import text
 
-        from app.database import engine, get_db
+        from app.database import engine
 
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))

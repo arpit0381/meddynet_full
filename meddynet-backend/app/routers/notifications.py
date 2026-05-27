@@ -1,7 +1,6 @@
 import logging
-from typing import Any, Dict, List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from app.middleware.rbac import get_current_user
 from app.services.mongo_service import mongo_service

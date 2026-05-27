@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import desc, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db

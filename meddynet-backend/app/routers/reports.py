@@ -1,6 +1,5 @@
 import logging
 import uuid
-from typing import List
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +10,6 @@ from app.middleware.rbac import get_current_user, require_role
 from app.models.booking import Booking, BookingTest
 from app.models.lab import Lab, LabTest
 from app.models.report import Report
-from app.schemas.report import ReportResponse
 from app.services.mongo_service import mongo_service
 from app.services.report_service import upload_report_to_supabase
 

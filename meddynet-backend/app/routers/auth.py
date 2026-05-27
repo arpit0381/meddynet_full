@@ -1,7 +1,7 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -190,7 +190,7 @@ async def register_lab(payload: LabOnboardingRequest, db: AsyncSession = Depends
 
     try:
         await db.commit()
-    except Exception as e:
+    except Exception:
         await db.rollback()
         raise HTTPException(status_code=500, detail="Registration failed. Please try again.")
 
@@ -254,7 +254,7 @@ async def send_otp_route(request: Request, payload: SendOTPRequest):
             logger.error(f"OTP notification delivery failed for {payload.phone}: {e}")
 
         return {"message": "OTP sent successfully"}
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=400, detail="OTP request failed. Please try again.")
 
 

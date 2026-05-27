@@ -1,7 +1,7 @@
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import func
@@ -9,9 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.database import get_db
-from app.middleware.rbac import get_current_user, require_role
+from app.middleware.rbac import require_role
 from app.models.booking import Booking, BookingStatus
-from app.models.technician import Technician, TechnicianStatus
+from app.models.technician import Technician
 from app.schemas.booking import BookingResponse
 from app.schemas.technician import LocationUpdate
 from app.services.mongo_service import mongo_service
@@ -122,7 +122,7 @@ async def get_available_jobs(
     """
     query = (
         select(Booking)
-        .filter(Booking.status == BookingStatus.confirmed, Booking.technician_id == None)
+        .filter(Booking.status == BookingStatus.confirmed, Booking.technician_id is None)
         .order_by(Booking.scheduled_at.asc())
     )
 
