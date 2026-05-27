@@ -8,3 +8,15 @@ from .review import Review
 from .support import SupportTicket
 from .technician import Technician
 from .user import User
+
+__all__ = [
+    "Booking",
+    "HealthRecord",
+    "Lab",
+    "Payment",
+    "Report",
+    "Review",
+    "SupportTicket",
+    "Technician",
+    "User",
+]
