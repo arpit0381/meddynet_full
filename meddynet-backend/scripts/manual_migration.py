@@ -2,8 +2,10 @@
 import sqlalchemy as sa
 from sqlalchemy import create_engine, text
 
+import os
+
 # Host-mapped Postgres URL (NeonDB emulator in Docker)
-DATABASE_URL = "postgresql://admin:password@127.0.0.1:5433/meddynet"
+DATABASE_URL = os.environ.get("MIGRATION_DB_URL", "postgresql://user:pass@127.0.0.1:5432/meddynet")
 
 
 def migrate():
