@@ -51,12 +51,19 @@ def mock_db():
 def auth_headers():
     """Generate a test JWT auth header."""
     from app.services.auth_service import create_access_token
-    token = create_access_token({"sub": "12345678-1234-5678-1234-567812345678", "role": "patient", "phone": "+919999999999"})
+
+    token = create_access_token(
+        {"sub": "12345678-1234-5678-1234-567812345678", "role": "patient", "phone": "+919999999999"}
+    )
     return {"Authorization": f"Bearer {token}"}
+
 
 @pytest.fixture
 def admin_headers():
     """Generate a test JWT auth header for admin."""
     from app.services.auth_service import create_access_token
-    token = create_access_token({"sub": "87654321-4321-8765-4321-876543210987", "role": "admin", "phone": "+919999999998"})
+
+    token = create_access_token(
+        {"sub": "87654321-4321-8765-4321-876543210987", "role": "admin", "phone": "+919999999998"}
+    )
     return {"Authorization": f"Bearer {token}"}
