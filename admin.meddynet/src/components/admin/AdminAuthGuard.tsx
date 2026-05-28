@@ -6,27 +6,25 @@ import { useAdminStore } from "@/store/adminStore";
 import { Command } from "lucide-react";
 
 export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useAdminStore();
+  const { isAuthenticated, user, _hasHydrated } = useAdminStore();
   const router = useRouter();
   const pathname = usePathname();
-  const [isChecking, setIsChecking] = useState(true);
+
+  const isPublicRoute = pathname === "/login" || pathname === "/";
+  const shouldRedirectLogin = !isAuthenticated && !isPublicRoute;
+  const shouldRedirectUnauthorized = !!(isAuthenticated && user && !['admin', 'superadmin', 'moderator'].includes(user.role));
 
   useEffect(() => {
-    // Admin portal routes are strictly protected except login
-    const isPublicRoute = pathname === "/login" || pathname === "/";
-
-    if (!isAuthenticated && !isPublicRoute) {
-      // Unauthorized attempt to access admin console - Redirect to login
+    if (!_hasHydrated) return;
+    
+    if (shouldRedirectLogin) {
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
-    } else if (isAuthenticated && user && !['admin', 'superadmin', 'moderator'].includes(user.role)) {
-        // Logged in but not an admin
-        router.replace("/unauthorized"); 
-    } else {
-      setIsChecking(false);
+    } else if (shouldRedirectUnauthorized) {
+      router.replace("/unauthorized"); 
     }
-  }, [isAuthenticated, user, pathname, router]);
+  }, [_hasHydrated, shouldRedirectLogin, shouldRedirectUnauthorized, pathname, router]);
 
-  if (isChecking) {
+  if (!_hasHydrated || shouldRedirectLogin || shouldRedirectUnauthorized) {
     return (
       <div className="fixed inset-0 bg-surface z-9999 flex flex-col items-center justify-center gap-8">
         {/* Futuristic Command HUD */}

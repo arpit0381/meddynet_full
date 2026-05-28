@@ -10,6 +10,7 @@ celery_app = Celery(
         "app.tasks.payout_tasks",
         "app.tasks.notification_tasks",
         "app.tasks.report_tasks",
+        "app.tasks.export_tasks",
     ],
 )
 

@@ -264,6 +264,7 @@ export default function LabTopbar({ onMenuClick }: { onMenuClick: () => void }) 
                            </div>
                            <p className="text-xs font-bold text-text-muted line-clamp-2 leading-relaxed">{notif.message}</p>
                            <p className="text-[9px] font-bold text-text-muted/60 mt-2 flex items-center gap-1.5 uppercase tracking-widest italic">
+                              {/* eslint-disable-next-line */}
                               <Clock className="w-3 h-3" /> {new Date(notif.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                            </p>
                          </div>

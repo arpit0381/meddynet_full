@@ -17,7 +17,7 @@ async def check():
             res = await session.execute(select(User).filter(User.phone == "+918235823255"))
             user = res.scalar_one_or_none()
             if user:
-                print(f"USER_STATUS:FOUND")
+                print("USER_STATUS:FOUND")
                 print(f"USER_NAME:{user.name}")
             else:
                 print("USER_STATUS:NOT_FOUND")

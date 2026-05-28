@@ -91,7 +91,7 @@ export default function OverviewPage() {
         icon: template.icon,
         color: template.color,
         bgColor: template.bgColor,
-        time: new Date(act.created_at || act.timestamp || Date.now())
+        time: new Date(act.created_at || act.timestamp || "2024-01-01T00:00:00Z")
       };
     });
   }, [stats]);

@@ -14,7 +14,7 @@ async def check_enums():
             "bookingtype",
         ]:
             out.append(f"Checking {enum_name}:")
-            res = await session.execute(text(f"""
+            res = await session.execute(text("""
                 SELECT enumlabel 
                 FROM pg_enum 
                 JOIN pg_type ON pg_enum.enumtypid = pg_type.oid 

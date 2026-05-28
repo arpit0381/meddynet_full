@@ -1,5 +1,7 @@
 import logging
+import time
 import uuid
+from datetime import date
 
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel
@@ -65,8 +67,6 @@ async def register_route(payload: RegisterRequest, db: AsyncSession = Depends(ge
         raise HTTPException(status_code=400, detail="User with this email or phone already exists")
 
     hashed_pw = get_password_hash(payload.password)
-    from datetime import date
-
     dob_val = payload.dob
     if isinstance(dob_val, str):
         dob_val = date.fromisoformat(dob_val)
@@ -153,8 +153,6 @@ async def register_lab(payload: LabOnboardingRequest, db: AsyncSession = Depends
             role="lab_admin",
         )
         db.add(target_user)
-
-    import uuid
 
     lab_id = uuid.uuid4()
     target_user.lab_id = lab_id
@@ -246,14 +244,19 @@ async def register_lab(payload: LabOnboardingRequest, db: AsyncSession = Depends
 @limiter.limit("5/minute")
 async def send_otp_route(request: Request, payload: SendOTPRequest):
     try:
-        otp = await send_otp(payload.phone)
+        otp = await send_otp(payload.email)
 
         try:
-            await notification_service.send_verification_otp(payload.phone, otp)
+            await notification_service.send_verification_otp(payload.email, otp)
         except Exception as e:
-            logger.error(f"OTP notification delivery failed for {payload.phone}: {e}")
+            logger.error(f"OTP notification delivery failed for {payload.email}: {e}")
 
-        return {"message": "OTP sent successfully"}
+        from app.config import settings
+        response_data = {"message": "OTP sent successfully"}
+        if settings.ENVIRONMENT == "development":
+            response_data["dev_otp"] = otp
+            
+        return response_data
     except Exception:
         raise HTTPException(status_code=400, detail="OTP request failed. Please try again.")
 
@@ -261,15 +264,15 @@ async def send_otp_route(request: Request, payload: SendOTPRequest):
 @router.post("/verify-otp")
 async def verify_otp_route(payload: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
     try:
-        await verify_otp(payload.phone, payload.otp)
+        await verify_otp(payload.email, payload.otp)
 
         # Check if user exists in DB
-        result = await db.execute(select(User).filter(User.phone == payload.phone))
+        result = await db.execute(select(User).filter(User.email == payload.email))
         user = result.scalar_one_or_none()
 
         if not user:
             # Create new user context.
-            user = User(phone=payload.phone, name="New User", role="user")
+            user = User(email=payload.email, name="New User", role="user")
             db.add(user)
             await db.commit()
             await db.refresh(user)
@@ -277,7 +280,7 @@ async def verify_otp_route(payload: VerifyOTPRequest, db: AsyncSession = Depends
         # Map role and context IDs
         token_data = {
             "sub": str(user.id),
-            "phone": user.phone,
+            "email": user.email,
             "role": user.role,
             "lab_id": str(user.lab_id) if user.lab_id else None,
             "technician_id": str(user.technician_id) if user.technician_id else None,
@@ -291,7 +294,7 @@ async def verify_otp_route(payload: VerifyOTPRequest, db: AsyncSession = Depends
             "refresh_token": refresh_token,
             "user": {
                 "id": str(user.id),
-                "phone": user.phone,
+                "email": user.email,
                 "role": user.role,
                 "is_active": user.is_active,
                 "created_at": user.created_at,
@@ -302,7 +305,7 @@ async def verify_otp_route(payload: VerifyOTPRequest, db: AsyncSession = Depends
             },
         }
     except Exception as e:
-        logger.error(f"OTP verification failed for {payload.phone}: {e}", exc_info=True)
+        logger.error(f"OTP verification failed for {payload.email}: {e}", exc_info=True)
         raise HTTPException(
             status_code=400,
             detail="OTP verification failed. Please check and try again.",
@@ -335,10 +338,13 @@ async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depe
     prefs = user.preferences or {}
     if prefs.get("two_fa_enabled"):
         # Send OTP and return a temporary challenge token
-        otp = await send_otp(user.phone)
-        # Create a short-lived temp token (5 min) to identify the user for the next step
-        import time
+        otp = await send_otp(user.email)
+        try:
+            await notification_service.send_verification_otp(user.email, otp)
+        except Exception as e:
+            logger.error(f"OTP notification delivery failed for {user.email}: {e}")
 
+        # Create a short-lived temp token (5 min) to identify the user for the next step
         temp_payload = {
             "sub": str(user.id),
             "type": "2fa_challenge",
@@ -348,18 +354,18 @@ async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depe
         response = {
             "requires_2fa": True,
             "temp_token": temp_token,
-            "phone_hint": user.phone[-4:],
+            "email_hint": f"{user.email[:3]}***@{user.email.split('@')[-1]}" if "@" in user.email else user.email,
         }
         # FIX 10: OTP logged server-side only, never in HTTP response
         from app.config import settings
 
         if settings.ENVIRONMENT == "development":
-            logger.debug(f"[DEV ONLY] 2FA OTP for {user.phone}: {otp}")
+            logger.debug(f"[DEV ONLY] 2FA OTP for {user.email}: {otp}")
         return response
     # ─── Normal Login (no 2FA) ───
     token_data = {
         "sub": str(user.id),
-        "phone": user.phone,
+        "email": user.email,
         "role": user.role,
         "is_active": user.is_active,
         "lab_id": str(user.lab_id) if user.lab_id else None,
@@ -377,7 +383,6 @@ async def login(request: Request, payload: LoginRequest, db: AsyncSession = Depe
             "id": str(user.id),
             "name": user.name,
             "email": user.email,
-            "phone": user.phone,
             "role": user.role,
             "lab_id": str(user.lab_id) if user.lab_id else None,
         },
@@ -409,14 +414,14 @@ async def verify_2fa_login(payload: TwoFALoginVerifyRequest, db: AsyncSession = 
         raise HTTPException(status_code=404, detail="User not found")
 
     # Verify OTP
-    is_valid = await verify_otp(user.phone, payload.otp)
+    is_valid = await verify_otp(user.email, payload.otp)
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
 
     # OTP valid — issue real tokens
     real_token_data = {
         "sub": str(user.id),
-        "phone": user.phone,
+        "email": user.email,
         "role": user.role,
         "is_active": user.is_active,
         "lab_id": str(user.lab_id) if user.lab_id else None,
@@ -523,23 +528,28 @@ class TwoFAVerifyRequest(BaseModel):
 
 @router.post("/2fa/enable")
 async def enable_2fa(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """Send a 6-digit OTP to the user's phone to enable 2FA."""
+    """Send a 6-digit OTP to the user's email to enable 2FA."""
     result = await db.execute(select(User).filter(User.id == uuid.UUID(current_user["sub"])))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     # Reuse existing OTP infrastructure (stored in Redis)
-    otp = await send_otp(user.phone)
+    otp = await send_otp(user.email)
+    try:
+        await notification_service.send_verification_otp(user.email, otp)
+    except Exception as e:
+        logger.error(f"OTP notification delivery failed for {user.email}: {e}")
+
     response = {
-        "message": "OTP sent to your registered phone number",
-        "phone": user.phone[-4:],
+        "message": "OTP sent to your registered email",
+        "email_hint": f"{user.email[:3]}***@{user.email.split('@')[-1]}" if "@" in user.email else user.email,
     }
     # FIX 10: OTP logged server-side only, never in HTTP response
     from app.config import settings
 
     if settings.ENVIRONMENT == "development":
-        logger.debug(f"[DEV ONLY] 2FA enable OTP for {user.phone}: {otp}")
+        logger.debug(f"[DEV ONLY] 2FA enable OTP for {user.email}: {otp}")
     return response
 
 
@@ -555,7 +565,7 @@ async def verify_2fa(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    is_valid = await verify_otp(user.phone, payload.otp)
+    is_valid = await verify_otp(user.email, payload.otp)
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
 

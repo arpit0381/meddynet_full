@@ -21,9 +21,9 @@ export default function LoginPage() {
   const redirect = searchParams.get("redirect") || "/dashboard";
   const { setUser } = useUser();
   
-  const [loginMethod, setLoginMethod] = useState<"phone" | "email">("phone");
-  const [step, setStep] = useState<"phone" | "otp" | "2fa">("phone");
-  const [phone, setPhone] = useState("");
+  const [loginMethod, setLoginMethod] = useState<"otp" | "password">("otp");
+  const [step, setStep] = useState<"email" | "otp" | "2fa">("email");
+  const [otpEmail, setOtpEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -110,21 +110,25 @@ export default function LoginPage() {
     haptics.light();
     setErrorMsg("");
     
-    if (phone.length < 10) {
-      setErrorMsg("Please enter a valid phone number");
+    if (!otpEmail.includes("@")) {
+      setErrorMsg("Please enter a valid email address");
       return;
     }
 
     setLoading(true);
     try {
-      // Add country code if missing
-      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
-      await apiClient.post("/auth/send-otp", { phone: formattedPhone });
+      const { data } = await apiClient.post("/auth/send-otp", { email: otpEmail });
       setStep("otp");
+      // DEV: auto-fill OTP when running on localhost (no email needed)
+      if (data.dev_otp) {
+        setOtp(data.dev_otp);
+      }
       haptics.success();
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setErrorMsg(axiosErr.response?.data?.detail || "Failed to send OTP. Try again.");
+      const axiosErr = err as { response?: { data?: { detail?: string | any[] } } };
+      const detail = axiosErr.response?.data?.detail;
+      const msg = Array.isArray(detail) ? detail[0]?.msg : detail;
+      setErrorMsg(typeof msg === 'string' ? msg : "Failed to send OTP. Try again.");
     } finally {
       setLoading(false);
     }
@@ -137,9 +141,8 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
       const { data } = await apiClient.post("/auth/verify-otp", { 
-        phone: formattedPhone, 
+        email: otpEmail, 
         otp 
       });
       
@@ -176,8 +179,10 @@ export default function LoginPage() {
 
       router.push(redirect);
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { detail?: string } } };
-      setErrorMsg(axiosErr.response?.data?.detail || "Invalid OTP. Please try again.");
+      const axiosErr = err as { response?: { data?: { detail?: string | any[] } } };
+      const detail = axiosErr.response?.data?.detail;
+      const msg = Array.isArray(detail) ? detail[0]?.msg : detail;
+      setErrorMsg(typeof msg === 'string' ? msg : "Invalid OTP. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -210,6 +215,7 @@ export default function LoginPage() {
                     src="/MeddyNetlogo.png"
                     alt="MeddyNet"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-contain object-left"
                     priority
                   />
@@ -250,6 +256,7 @@ export default function LoginPage() {
                     src="/MeddyNetlogo.png"
                     alt="MeddyNet"
                     fill
+                    sizes="(max-width: 768px) 100vw, 100vw"
                     className="object-contain"
                   />
                 </div>
@@ -258,23 +265,23 @@ export default function LoginPage() {
               <div className="mb-8">
                 <div className="flex items-center gap-4 mb-6 p-1 bg-slate-100 rounded-xl w-fit">
                     <button 
-                        onClick={() => setLoginMethod("phone")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${loginMethod === 'phone' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setLoginMethod("otp")}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${loginMethod === 'otp' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
-                        Phone OTP
+                        Email OTP
                     </button>
                     <button 
-                        onClick={() => setLoginMethod("email")}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${loginMethod === 'email' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        onClick={() => setLoginMethod("password")}
+                        className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${loginMethod === 'password' ? 'bg-white text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         Email & Password
                     </button>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-bold text-dark mb-2">
-                  {loginMethod === 'email' ? 'Welcome Back' : (step === "phone" ? t("login.login") : "Verify OTP")}
+                  {loginMethod === 'password' ? 'Welcome Back' : (step === "email" ? t("login.login") : "Verify OTP")}
                 </h2>
                 <p className="text-sm sm:text-[15px] text-slate-600">
-                  {loginMethod === 'email' ? 'Login with your registered email and password.' : (step === "phone" ? "Enter your phone number to receive a one-time password." : `Enter the OTP sent to ${phone}`)}
+                  {loginMethod === 'password' ? 'Login with your registered email and password.' : (step === "email" ? "Enter your email address to receive a one-time password." : `Enter the OTP sent to ${otpEmail}`)}
                 </p>
               </div>
 
@@ -284,7 +291,7 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {loginMethod === 'email' ? (
+              {loginMethod === 'password' ? (
                 step === '2fa' ? (
                   // 2FA Verification Step
                   <form className="space-y-5" onSubmit={handleTwoFALoginVerify}>
@@ -292,7 +299,7 @@ export default function LoginPage() {
                       <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <ShieldCheck className="w-8 h-8 text-blue-600" />
                       </div>
-                      <p className="text-sm text-slate-600">Enter the OTP sent to your phone ending in <strong>••••{twoFAPhoneHint}</strong></p>
+                      <p className="text-sm text-slate-600">Enter the OTP sent to <strong>{twoFAPhoneHint}</strong></p>
                     </div>
                     {/* DEV MODE box */}
                     {twoFADevOtp && (
@@ -326,7 +333,7 @@ export default function LoginPage() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => { setStep('phone'); setEmail(''); setPassword(''); setLoginMethod('email'); }}
+                      onClick={() => { setStep('email'); setEmail(''); setPassword(''); setLoginMethod('password'); }}
                       className="w-full text-center text-xs text-slate-500 hover:text-primary transition-colors font-medium"
                     >
                       ← Back to Login
@@ -374,17 +381,17 @@ export default function LoginPage() {
                 )
 
               ) : (
-                step === "phone" ? (
+                step === "email" ? (
                   <form className="space-y-5" onSubmit={handleSendOtp}>
                     <div>
-                      <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Phone Number</label>
+                      <label className="text-[13px] font-bold text-slate-700 mb-1.5 block">Email Address</label>
                       <div className="flex items-center bg-slate-100 rounded-lg px-4 h-12 focus-within:ring-2 focus-within:ring-primary focus-within:bg-white transition-all border border-transparent focus-within:border-primary">
-                        <Phone className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
+                        <ShieldCheck className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
                         <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="e.g. 9876543210"
+                          type="email"
+                          value={otpEmail}
+                          onChange={(e) => setOtpEmail(e.target.value)}
+                          placeholder="e.g. user@example.com"
                           className="flex-1 bg-transparent outline-none text-base text-dark placeholder:text-slate-400"
                           suppressHydrationWarning
                           required
@@ -434,10 +441,10 @@ export default function LoginPage() {
                     <div className="text-center mt-4">
                       <button 
                         type="button" 
-                        onClick={() => setStep("phone")}
+                        onClick={() => setStep("email")}
                         className="text-[13px] text-primary font-semibold hover:underline"
                       >
-                        Change Phone Number
+                        Change Email Address
                       </button>
                     </div>
                   </form>

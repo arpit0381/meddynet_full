@@ -12,38 +12,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const router = useRouter();
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.length >= 10) {
+    if (email.includes('@')) {
       try {
-        await api.post("/auth/send-otp", { phone });
+        await api.post("/auth/send-otp", { email });
         setOtpSent(true);
-      } catch (error) {
-        alert("Failed to send OTP. Try again later.");
+        setErrorMsg('');
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { data?: { detail?: string | any[] } } };
+        const detail = axiosErr.response?.data?.detail;
+        const apiError = Array.isArray(detail) ? detail[0]?.msg : detail;
+        setErrorMsg(typeof apiError === 'string' ? apiError : "Failed to send OTP. Try again.");
       }
     }
   };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length === 4) {
+    if (otp.length === 6) {
       try {
-        const response = await api.post("/auth/verify-otp", { phone, otp });
+        const response = await api.post("/auth/verify-otp", { email, otp });
         const { access_token, user } = response.data;
         
         localStorage.setItem("tech_token", access_token);
         localStorage.setItem("tech_user", JSON.stringify(user));
         
-        useAuthStore.getState().login(user, phone);
+        useAuthStore.getState().login(user, email);
         
         router.push('/dashboard');
-      } catch (error) {
-        alert("Invalid OTP code.");
+      } catch (err: unknown) {
+        const axiosErr = err as { response?: { data?: { detail?: string | any[] } } };
+        const detail = axiosErr.response?.data?.detail;
+        const apiError = Array.isArray(detail) ? detail[0]?.msg : detail;
+        setErrorMsg(typeof apiError === 'string' ? apiError : "Invalid OTP. Please try again.");
       }
     }
   };
@@ -100,16 +108,15 @@ export default function LoginPage() {
               {!otpSent ? (
                 <form onSubmit={handleSendOtp} className="space-y-6">
                   <div className="space-y-3">
-                    <Label htmlFor="phone" className="text-gray-400 font-black text-[10px] uppercase tracking-[0.25em] ml-1">Fleet ID (Mobile)</Label>
+                    <Label htmlFor="email" className="text-gray-400 font-black text-[10px] uppercase tracking-[0.25em] ml-1">Fleet ID (Email)</Label>
                     <div className="relative group/field">
-                      <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-black text-lg group-focus-within/field:text-[#00A86B] transition-colors border-r border-gray-100 pr-4">+91</div>
                       <Input 
-                        id="phone" 
-                        type="tel" 
-                        placeholder="00000 00000" 
-                        className="pl-20 h-16 bg-gray-50/50 border-gray-100 hover:border-gray-200 focus:bg-white focus:border-[#008a58] focus:ring-4 focus:ring-[#00A86B]/10 rounded-[1.25rem] font-black text-xl tracking-widest transition-all appearance-none outline-none"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        id="email" 
+                        type="email" 
+                        placeholder="tech@example.com" 
+                        className="h-16 bg-gray-50/50 border-gray-100 hover:border-gray-200 focus:bg-white focus:border-[#008a58] focus:ring-4 focus:ring-[#00A86B]/10 rounded-[1.25rem] font-bold text-lg transition-all appearance-none outline-none"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         required
                         autoFocus
                       />
@@ -118,7 +125,7 @@ export default function LoginPage() {
                   <Button 
                     type="submit" 
                     className="w-full h-16 bg-[#00A86B] hover:bg-[#008a58] text-white rounded-[1.25rem] font-black text-lg shadow-xl shadow-[#00A86B]/25 transition-all active:scale-[0.97] hover:-translate-y-1 active:shadow-lg group"
-                    disabled={phone.length < 10}
+                    disabled={!email.includes('@')}
                   >
                     <span className="group-hover:translate-x-0.5 transition-transform inline-block">Receive Access Code</span>
                   </Button>
@@ -130,10 +137,10 @@ export default function LoginPage() {
                     <Input 
                       id="otp" 
                       type="text" 
-                      placeholder="• • • •" 
-                      className="h-16 text-center tracking-[1.2em] text-2xl font-black bg-gray-50/50 border-gray-100 focus:bg-white focus:border-[#00A86B] focus:ring-4 focus:ring-[#00A86B]/10 rounded-[1.25rem] transition-all outline-none"
+                      placeholder="• • • • • •" 
+                      className="h-16 text-center tracking-[0.6em] text-2xl font-black bg-gray-50/50 border-gray-100 focus:bg-white focus:border-[#00A86B] focus:ring-4 focus:ring-[#00A86B]/10 rounded-[1.25rem] transition-all outline-none"
                       value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       required
                       autoFocus
                     />
@@ -145,7 +152,7 @@ export default function LoginPage() {
                   <Button 
                     type="submit" 
                     className="w-full h-16 bg-gray-900 hover:bg-black text-white rounded-[1.25rem] font-black text-lg shadow-xl shadow-black/20 transition-all active:scale-[0.97] hover:-translate-y-1 active:shadow-lg group flex items-center justify-center gap-3"
-                    disabled={otp.length !== 4}
+                    disabled={otp.length !== 6}
                   >
                     <span>Authorize Login</span>
                     <div className="w-1.5 h-1.5 rounded-full bg-green-400 group-hover:animate-ping"></div>

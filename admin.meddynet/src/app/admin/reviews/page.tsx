@@ -6,7 +6,8 @@ import { Modal } from "@/components/admin/ui/Modal";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { ConfirmDialog } from "@/components/admin/ui/ConfirmDialog";
 import { PermissionGate } from "@/components/admin/ui/PermissionGate";
-import { mockReviews, Review } from "@/data/reviews";
+import { useAdminReviews } from "@/lib/hooks";
+import { useEffect } from "react";
 import { Star, Flag, Eye, Trash2, MessageSquare, TrendingUp, AlertCircle, CheckCircle2, X } from "lucide-react";
 
 function StarDisplay({ rating }: { rating: number }) {
@@ -19,8 +20,31 @@ function StarDisplay({ rating }: { rating: number }) {
   );
 }
 
+export interface Review {
+  id: string;
+  patientName: string;
+  labName: string;
+  testName: string;
+  rating: number;
+  text: string;
+  date: string;
+  status: "Published" | "Flagged" | "Removed";
+  sentiment: "Positive" | "Neutral" | "Negative";
+}
+
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const { data: rawReviews = [], isLoading } = useAdminReviews();
+  const reviews: Review[] = rawReviews.map((r: Record<string, unknown>) => ({
+    id: r.id as string,
+    patientName: "Patient (Hidden)", // Not returned by API yet
+    labName: r.lab_name as string,
+    testName: "Lab Booking", // General fallback
+    rating: r.rating as number,
+    text: (r.comment as string) || "No comment provided.",
+    date: r.created_at as string,
+    status: "Published",
+    sentiment: (r.rating as number) >= 4 ? "Positive" : (r.rating as number) <= 2 ? "Negative" : "Neutral"
+  }));
   const [previewModal, setPreviewModal] = useState<Review | null>(null);
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
   const [filterRating, setFilterRating] = useState<number | null>(null);
@@ -143,7 +167,7 @@ export default function ReviewsPage() {
         </select>
       </div>
 
-      <DataTable data={filtered} columns={columns} searchable />
+      {isLoading ? <div className="text-center p-10 text-muted">Loading reviews...</div> : <DataTable data={filtered} columns={columns} searchable />}
 
       {/* Preview Modal */}
       <Modal isOpen={!!previewModal} onClose={() => setPreviewModal(null)} title={`Review ${previewModal?.id}`}>

@@ -1,7 +1,7 @@
 import uuid
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 from app.models.lab import SubscriptionPlan
 
@@ -24,8 +24,7 @@ class LabTestResponse(LabTestBase):
     id: uuid.UUID
     lab_id: uuid.UUID
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LabBase(BaseModel):
@@ -57,5 +56,4 @@ class LabResponse(LabBase):
     distance: Optional[float] = None
     tests: List[LabTestResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

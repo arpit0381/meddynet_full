@@ -14,7 +14,7 @@ async def verify_diagnostics():
             if response.status_code == 200:
                 data = response.json()
                 print(f"OVERALL STATUS: {data['overall_status'].upper()}")
-                print(f"--------------------------------------------------")
+                print("--------------------------------------------------")
 
                 for service, info in data["services"].items():
                     status_marker = "✅" if info["status"] == "healthy" else "❌"

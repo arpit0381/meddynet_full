@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     # WhatsApp Business API (Meta Cloud API)
     WHATSAPP_PHONE_NUMBER_ID: Optional[str] = None
     WHATSAPP_ACCESS_TOKEN: Optional[str] = None
+    
+    # Resend Email API
+    RESEND_API_KEY: Optional[str] = None
+
     CORS_ORIGINS: str = (
         "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:3002,http://127.0.0.1:3003"
     )

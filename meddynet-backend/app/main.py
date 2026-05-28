@@ -15,14 +15,22 @@ from app.routers import (
     admin_portal,
     auth,
     bookings,
+    cities,
+    coupons,
     diagnostics,
     health_records,
     lab_portal,
     labs,
+    master_tests,
+    blog,
+    data_export,
     notifications,
     payments,
     payouts,
     reports,
+    reviews,
+    subscriptions,
+    support,
     technician_portal,
     technicians,
     users,
@@ -135,6 +143,16 @@ app.include_router(admin_portal.router)
 app.include_router(payouts.router)
 app.include_router(diagnostics.router)
 app.include_router(health_records.router)
+
+# New feature routers
+app.include_router(reviews.router)
+app.include_router(subscriptions.router)
+app.include_router(coupons.router)
+app.include_router(cities.router)
+app.include_router(master_tests.router)
+app.include_router(blog.router)
+app.include_router(data_export.router)
+app.include_router(support.router)
 
 
 # WebSocket global mount

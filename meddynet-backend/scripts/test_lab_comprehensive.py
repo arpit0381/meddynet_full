@@ -46,7 +46,7 @@ async def test_lab_functionality():
             print(f"  [OK] Lab created with ID: {lab_id}")
 
             # 2. Add Lab Tests
-            print(f"[Phase 2] Adding Lab Tests...")
+            print("[Phase 2] Adding Lab Tests...")
             tests = [
                 {
                     "name": "Vitamin D Test",
@@ -104,7 +104,7 @@ async def test_lab_functionality():
             print(f"  [OK] Booking created: {booking_id}")
 
             # 4. Simulate Payment & Revenue logic
-            print(f"[Phase 4] Simulating Payment Logic...")
+            print("[Phase 4] Simulating Payment Logic...")
             payment_id = uuid.uuid4()
             total_amt = 200000
             comm_amt = int(total_amt * 0.15)
@@ -148,7 +148,7 @@ async def test_lab_functionality():
             print(f"  [OK] Payment processed. Lab Amount: ₹{lab_amt/100:.2f}")
 
             # 5. Verify Lab Portal Stats logic
-            print(f"[Phase 5] Verifying Lab Stats (Manual Calc)...")
+            print("[Phase 5] Verifying Lab Stats (Manual Calc)...")
             # Logic from lab_portal.py
             revenue_res = await session.execute(
                 select(func.sum(Payment.lab_amount)).filter(
@@ -164,7 +164,7 @@ async def test_lab_functionality():
                 print(f"  [WARNING] Stats mismatch: {total_revenue} vs {lab_amt}")
 
             # 6. MongoDB Audit Trail
-            print(f"[Phase 6] Logging to MongoDB...")
+            print("[Phase 6] Logging to MongoDB...")
             await mongo_service.log_event(
                 level="info",
                 event="lab_test_summary",
@@ -178,7 +178,7 @@ async def test_lab_functionality():
             print("  [OK] MongoDB log created.")
 
             # 7. Supabase Report Simulation
-            print(f"[Phase 7] Simulating Report Upload...")
+            print("[Phase 7] Simulating Report Upload...")
             # We use the existing test_report.pdf or create a dummy one if it doesn't exist
             pdf_path = "scripts/test_report.pdf"
             if not os.path.exists(pdf_path):

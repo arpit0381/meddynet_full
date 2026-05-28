@@ -22,6 +22,10 @@ export const adminKeys = {
   supportTickets: ['admin', 'support-tickets'] as const,
   reports: ['admin', 'reports-audit'] as const,
   auditLogs: ['admin', 'audit-logs'] as const,
+  coupons: ['admin', 'coupons'] as const,
+  subscriptions: ['admin', 'subscriptions'] as const,
+  reviews: ['admin', 'reviews'] as const,
+  cities: ['admin', 'cities'] as const,
 };
 
 
@@ -97,6 +101,102 @@ export function useToggleLabStatus() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: adminKeys.labs });
+    },
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// NEW PHASE 1 APIS (COUPONS, SUBSCRIPTIONS, REVIEWS)
+// ═══════════════════════════════════════════════════
+
+export function useAdminCoupons() {
+  return useQuery({
+    queryKey: adminKeys.coupons,
+    queryFn: async () => {
+      const { data } = await adminApi.get('/coupons');
+      return data;
+    },
+  });
+}
+
+export function useCreateCoupon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const { data } = await adminApi.post('/coupons', payload);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: adminKeys.coupons });
+    },
+  });
+}
+
+export function useToggleCoupon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (couponId: string) => {
+      const { data } = await adminApi.patch(`/coupons/${couponId}/toggle`);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: adminKeys.coupons });
+    },
+  });
+}
+
+export function useDeleteCoupon() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (couponId: string) => {
+      const { data } = await adminApi.delete(`/coupons/${couponId}`);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: adminKeys.coupons });
+    },
+  });
+}
+
+export function useAdminSubscriptions() {
+  return useQuery({
+    queryKey: adminKeys.subscriptions,
+    queryFn: async () => {
+      const { data } = await adminApi.get('/subscriptions');
+      return data;
+    },
+  });
+}
+
+export function useUpdateSubscription() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ planId, payload }: { planId: string, payload: Record<string, unknown> }) => {
+      const { data } = await adminApi.patch(`/subscriptions/${planId}`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: adminKeys.subscriptions });
+    },
+  });
+}
+
+export function useAdminReviews() {
+  return useQuery({
+    queryKey: adminKeys.reviews,
+    queryFn: async () => {
+      const { data } = await adminApi.get('/reviews/admin/all');
+      return data;
+    },
+  });
+}
+
+export function useAdminCities() {
+  return useQuery({
+    queryKey: adminKeys.cities,
+    queryFn: async () => {
+      const { data } = await adminApi.get('/cities');
+      return data;
     },
   });
 }

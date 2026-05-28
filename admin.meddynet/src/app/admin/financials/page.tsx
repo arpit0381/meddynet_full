@@ -57,7 +57,7 @@ export default function FinancialsPage() {
     lab: t.lab_name || t.lab || 'Unknown',
     amount: (t.amount || 0) / 100, // Scale to Rupees
     type: t.type || 'Payout',
-    date: new Date(t.date || t.created_at || Date.now()).toLocaleDateString(),
+    date: new Date(t.date || t.created_at || "2024-01-01T00:00:00Z").toLocaleDateString(),
     status: t.status || 'Pending'
   }));
 

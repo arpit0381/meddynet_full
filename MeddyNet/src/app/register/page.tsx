@@ -106,6 +106,7 @@ export default function RegisterPage() {
                     src="/MeddyNetlogo.png"
                     alt="MeddyNet"
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-contain object-left"
                     priority
                   />
@@ -150,6 +151,7 @@ export default function RegisterPage() {
                     src="/MeddyNetlogo.png"
                     alt="MeddyNet"
                     fill
+                    sizes="(max-width: 768px) 100vw, 100vw"
                     className="object-contain"
                   />
                 </div>

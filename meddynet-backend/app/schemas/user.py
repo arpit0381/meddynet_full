@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, model_validator
+from pydantic import ConfigDict, BaseModel, EmailStr, model_validator
 
 
 class UserBase(BaseModel):
@@ -54,5 +54,4 @@ class UserResponse(BaseModel):
             self.age = str(age)
         return self
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { StatCard } from "@/components/admin/ui/StatCard";
 import { DataTable, Column } from "@/components/admin/ui/DataTable";
 import { Modal } from "@/components/admin/ui/Modal";
 import { ConfirmDialog } from "@/components/admin/ui/ConfirmDialog";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { Map, Plus, Edit2, Trash2, Users, FlaskConical, Calendar, Activity } from "lucide-react";
+import { useAdminCities } from "@/lib/hooks";
+import { useEffect } from "react";
 
 interface City {
   id: string;
@@ -40,14 +42,26 @@ const mockCities: City[] = [
 const emptyForm = { name: "", state: "", pincodeRange: "", launchDate: "", status: "Active" as City["status"] };
 
 export default function CitiesPage() {
-  const [cities, setCities] = useState<City[]>(mockCities);
+  const { data: rawCities = [], isLoading } = useAdminCities();
+  const cities: City[] = rawCities.map((c: Record<string, unknown>) => ({
+    id: c.id as string,
+    name: c.name as string,
+    state: c.state as string,
+    totalLabs: (c.lab_count as number) || 0,
+    totalUsers: 0, // Not returned by API yet
+    bookingsMTD: 0, // Not returned by API yet
+    status: c.is_active ? "Active" : "Inactive",
+    launchDate: (c.created_at as string) || "2024-01-01",
+    pincodeRange: c.pincode_prefix ? `${c.pincode_prefix}xxx` : "N/A"
+  }));
   const [modal, setModal] = useState<{ isOpen: boolean; type: "create" | "edit"; city: City | null }>({ isOpen: false, type: "create", city: null });
   const [form, setForm] = useState(emptyForm);
   const [deleteDialog, setDeleteDialog] = useState<{ isOpen: boolean; id: string | null }>({ isOpen: false, id: null });
+  const idCounter = useRef(0);
 
   const handleSave = () => {
     if (modal.type === "create") {
-      setCities([{ ...form, id: `CTY-${Date.now()}`, totalLabs: 0, totalUsers: 0, bookingsMTD: 0 }, ...cities]);
+      setCities([{ ...form, id: `CTY-${++idCounter.current}`, totalLabs: 0, totalUsers: 0, bookingsMTD: 0 }, ...cities]);
     } else if (modal.city) {
       setCities(cities.map(c => c.id === modal.city!.id ? { ...c, ...form } : c));
     }
@@ -108,7 +122,7 @@ export default function CitiesPage() {
         <StatCard title="Coming Soon" value={String(cities.filter(c => c.status === "Coming Soon").length)} icon={Activity} />
       </div>
 
-      <DataTable data={cities} columns={columns} searchable />
+      {isLoading ? <div className="text-center p-10 text-muted">Loading cities...</div> : <DataTable data={cities} columns={columns} searchable />}
 
       <Modal isOpen={modal.isOpen} onClose={() => setModal({ isOpen: false, type: "create", city: null })} title={modal.type === "create" ? "Initialize Strategic Zone" : "Refactor Zone Configuration"}
         footer={<div className="flex justify-end gap-4 w-full">

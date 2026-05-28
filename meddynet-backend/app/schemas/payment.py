@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 from app.models.payment import PaymentStatus
 
@@ -32,5 +32,4 @@ class PaymentResponse(BaseModel):
     status: PaymentStatus
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

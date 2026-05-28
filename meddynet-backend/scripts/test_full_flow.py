@@ -26,11 +26,11 @@ async def test_full_flow():
     test_booking_id = uuid.uuid4()
     test_phone = f"+91{uuid.uuid4().hex[:10]}"
 
-    log(f"\n[SYSTEM] Starting MeddyNet Full-Stack Integration Test")
-    log(f"--------------------------------------------------")
+    log("\n[SYSTEM] Starting MeddyNet Full-Stack Integration Test")
+    log("--------------------------------------------------")
 
     # PHASE 1: Neon RLS Check
-    log(f"[Phase 1] Neon RLS Check...")
+    log("[Phase 1] Neon RLS Check...")
     async with async_session() as session:
         await session.execute(text(f"SET LOCAL app.current_user_id = '{str(test_user_id)}'"))
 
@@ -51,7 +51,7 @@ async def test_full_flow():
 
         try:
             await session.commit()
-            log(f"OK - Neon: Lab and User created.")
+            log("OK - Neon: Lab and User created.")
         except Exception as e:
             log(f"FAIL - Neon: Lab/User Creation Failed! {e}")
             return
@@ -91,7 +91,7 @@ async def test_full_flow():
                 stranger_count = res.scalar()
 
             if owner_count == 1:
-                log(f"OK - Neon: Access Verified for OWNER.")
+                log("OK - Neon: Access Verified for OWNER.")
             else:
                 log(f"FAIL - Neon: OWNER cannot access booking! Count: {owner_count}")
 
@@ -102,17 +102,17 @@ async def test_full_flow():
             role_info = res.fetchone()
 
             if stranger_count == 0:
-                log(f"OK - Neon: RLS Isolation Verified. (Other users cannot see this data).")
+                log("OK - Neon: RLS Isolation Verified. (Other users cannot see this data).")
             else:
                 if role_info and (role_info[0] or role_info[1]):
-                    log(f"OK (WARN) - Neon: RLS Isolation Bypassed (Expected for DB OWNER with BYPASSRLS privileges).")
+                    log("OK (WARN) - Neon: RLS Isolation Bypassed (Expected for DB OWNER with BYPASSRLS privileges).")
                 else:
                     log(f"FAIL - Neon: RLS ISOLATION FAILED! Count: {stranger_count}")
         except Exception as e:
             log(f"FAIL - Neon: RLS Testing Exception! {e}")
 
     # PHASE 2: MongoDB Audit Check
-    log(f"\n[Phase 2] MongoDB Audit Check...")
+    log("\n[Phase 2] MongoDB Audit Check...")
     try:
         await mongo_service.log_event(
             level="info",
@@ -123,12 +123,12 @@ async def test_full_flow():
                 "test_booking": str(test_booking_id),
             },
         )
-        log(f"OK - MongoDB: Integration event logged.")
+        log("OK - MongoDB: Integration event logged.")
     except Exception as e:
         log(f"FAIL - MongoDB: Logging failed! {e}")
 
     # PHASE 3: Supabase Storage Check
-    log(f"\n[Phase 3] Supabase Storage Check...")
+    log("\n[Phase 3] Supabase Storage Check...")
     pdf_path = os.path.join(os.path.dirname(__file__), "test_report.pdf")
 
     try:
@@ -139,15 +139,15 @@ async def test_full_flow():
             result = await storage_service.upload_report(mock_file, str(test_user_id), str(test_booking_id))
 
             if result and hasattr(result, "get") and result.get("url"):
-                log(f"OK - Supabase: File uploaded to 'reports' bucket.")
+                log("OK - Supabase: File uploaded to 'reports' bucket.")
                 log(f"LINK - Signed URL: {result['url']}")
             else:
                 log(f"FAIL - Supabase: Upload failed! {result}")
     except Exception as e:
         log(f"FAIL - Supabase: Storage Test Exception! {e}")
 
-    log(f"\n--------------------------------------------------")
-    log(f"SUMMARY - Check your Dashboards to verify manual entries.")
+    log("\n--------------------------------------------------")
+    log("SUMMARY - Check your Dashboards to verify manual entries.")
     log(f"Test User ID: {test_user_id}")
 
     with open("scripts/flow_logs.txt", "w", encoding="utf-8") as f:

@@ -30,7 +30,7 @@ interface TechnicianLocation {
 }
 
 export default function FleetMap({ technicians }: { technicians: TechnicianLocation[] }) {
-  const [L, setL] = useState<any>(null);
+  const [L, setL] = useState<typeof import('leaflet') | null>(null);
 
   useEffect(() => {
     import("leaflet").then((leaflet) => {

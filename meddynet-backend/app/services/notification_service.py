@@ -13,6 +13,11 @@ class NotificationProvider(abc.ABC):
     async def send_otp(self, phone: str, otp: str) -> bool:
         pass
 
+class EmailProvider(abc.ABC):
+    @abc.abstractmethod
+    async def send_email(self, to: str, subject: str, html_body: str) -> bool:
+        pass
+
 
 class MockNotificationProvider(NotificationProvider):
     async def send_sms(self, phone: str, message: str) -> bool:
@@ -23,10 +28,41 @@ class MockNotificationProvider(NotificationProvider):
         logger.info(f"[Mock OTP to {phone}]: Your MeddyNet code is {otp}")
         return True
 
+class MockEmailProvider(EmailProvider):
+    async def send_email(self, to: str, subject: str, html_body: str) -> bool:
+        logger.info(f"[Mock Email to {to}]: Subject: {subject}")
+        return True
 
 import httpx
+import resend
 
 from app.config import settings
+
+class ResendEmailProvider(EmailProvider):
+    def __init__(self, api_key: str):
+        resend.api_key = api_key
+
+    async def send_email(self, to: str, subject: str, html_body: str) -> bool:
+        # Use Resend sandbox domain in development (no domain verification needed)
+        # In production, use verified meddynet.com domain
+        if settings.ENVIRONMENT == "development":
+            from_address = "MeddyNet <onboarding@resend.dev>"
+        else:
+            from_address = "MeddyNet <noreply@meddynet.com>"
+
+        try:
+            logger.info(f"[Resend Email] Attempting to send to {to} from {from_address}")
+            r = resend.Emails.send({
+                "from": from_address,
+                "to": to,
+                "subject": subject,
+                "html": html_body
+            })
+            logger.info(f"[Resend Email] Successfully sent to {to}. Response: {r}")
+            return True
+        except Exception as e:
+            logger.error(f"[Resend Email] Failed to send email to {to}: {type(e).__name__}: {str(e)}")
+            return False
 
 
 class AuthkeyProvider(NotificationProvider):
@@ -76,8 +112,27 @@ from app.services.mongo_service import mongo_service
 
 # Factory or Singleton for the active provider
 class NotificationService:
-    def __init__(self, provider: NotificationProvider):
+    def __init__(self, provider: NotificationProvider, email_provider: EmailProvider):
         self.provider = provider
+        self.email_provider = email_provider
+
+    async def send_email_notification(self, to: str, subject: str, html_body: str) -> bool:
+        """Send an email notification via configured provider."""
+        res = await self.email_provider.send_email(to, subject, html_body)
+        
+        # 📂 PERSIST TO MONGODB HISTORY
+        await mongo_service.log_event(
+            level="info",
+            event="email_dispatched",
+            message=f"Email '{subject}' sent to {to}",
+            context={
+                "email": to,
+                "type": "email",
+                "subject": subject,
+                "success": res,
+            },
+        )
+        return res
 
     async def send_booking_confirmation(self, phone: str, booking_id: str):
         msg = f"Your MeddyNet booking {booking_id} is confirmed. A technician will be assigned shortly."
@@ -96,19 +151,37 @@ class NotificationService:
         )
         return res
 
-    async def send_verification_otp(self, phone: str, otp: str):
-        res = await self.provider.send_otp(phone, otp)
+    async def send_verification_otp(self, email: str, otp: str):
+        html_body = f"""
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff; border-radius: 12px; border: 1px solid #eaeaea;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h1 style="color: #0f172a; margin: 0; font-size: 24px;">MeddyNet Authentication</h1>
+            </div>
+            <div style="background: #f8fafc; border-radius: 8px; padding: 24px; text-align: center; margin-bottom: 24px;">
+                <p style="color: #64748b; margin-top: 0; margin-bottom: 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Your Verification Code</p>
+                <div style="font-size: 36px; font-weight: 800; color: #0ea5e9; letter-spacing: 0.1em; margin: 16px 0;">
+                    {otp}
+                </div>
+                <p style="color: #64748b; margin-bottom: 0; font-size: 14px;">This code will expire in 5 minutes.</p>
+            </div>
+            <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 0;">
+                If you did not request this code, please ignore this email or contact support.
+            </p>
+        </div>
+        """
+        res = await self.send_email_notification(to=email, subject="MeddyNet Verification Code", html_body=html_body)
 
         # Log OTP in dev mode only for debugging
         if settings.ENVIRONMENT == "development":
-            logger.info(f"[DEV] OTP dispatched to {phone}")
+            logger.info(f"[DEV] OTP dispatched to {email}")
 
         # 📂 PERSIST TO MONGODB HISTORY
+        masked_email = f"{email[:3]}***@{email.split('@')[-1]}" if "@" in email else email
         await mongo_service.log_event(
             level="info",
             event="otp_dispatched",
-            message=f"OTP sent to {phone[:5]}****",
-            context={"phone": phone, "type": "otp"},
+            message=f"OTP sent to {masked_email}",
+            context={"email": email, "type": "otp"},
         )
         return res
 
@@ -300,5 +373,11 @@ elif settings.AUTHKEY_API_KEY:
 else:
     active_provider = MockNotificationProvider()
     logger.info("NotificationService: Initialized with MockNotificationProvider")
+if settings.RESEND_API_KEY:
+    email_provider = ResendEmailProvider(api_key=settings.RESEND_API_KEY)
+    logger.info("NotificationService: Initialized with ResendEmailProvider")
+else:
+    email_provider = MockEmailProvider()
+    logger.info("NotificationService: Initialized with MockEmailProvider")
 
-notification_service = NotificationService(active_provider)
+notification_service = NotificationService(active_provider, email_provider)

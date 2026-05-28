@@ -8,11 +8,11 @@ from app.redis import redis_client
 
 
 async def verify_everything_direct():
-    print(f"\n[SYSTEM] Deep Service Connection Verification (Direct Import)")
-    print(f"--------------------------------------------------")
+    print("\n[SYSTEM] Deep Service Connection Verification (Direct Import)")
+    print("--------------------------------------------------")
 
     # 1. NeonDB (Postgres)
-    print(f"[Phase 1] NeonDB Check...")
+    print("[Phase 1] NeonDB Check...")
     try:
         async with async_session() as session:
             res = await session.execute(text("SELECT VERSION()"))
@@ -22,7 +22,7 @@ async def verify_everything_direct():
         print(f"❌ NEONDB: Failed! {e}")
 
     # 2. MongoDB Atlas
-    print(f"\n[Phase 2] MongoDB Atlas Check...")
+    print("\n[Phase 2] MongoDB Atlas Check...")
     try:
         # Ping command to verify SSL/TLS Handshake
         await mongo_service.client.admin.command("ping")
@@ -32,7 +32,7 @@ async def verify_everything_direct():
         print(f"❌ MONGODB: Failed! (SSL handshakes typically fail here on Windows if certifi is missing) {e}")
 
     # 3. Supabase Storage
-    print(f"\n[Phase 3] Supabase Storage Check...")
+    print("\n[Phase 3] Supabase Storage Check...")
     try:
         # List buckets to verify Service Role Access
         buckets = supabase_admin.storage.list_buckets()
@@ -42,15 +42,15 @@ async def verify_everything_direct():
         print(f"❌ SUPABASE: Failed! {e}")
 
     # 4. Redis
-    print(f"\n[Phase 4] Redis Check...")
+    print("\n[Phase 4] Redis Check...")
     try:
         await redis_client.ping()
-        print(f"✅ REDIS: Healthy")
+        print("✅ REDIS: Healthy")
     except Exception as e:
         print(f"❌ REDIS: Failed! {e}")
 
-    print(f"\n--------------------------------------------------")
-    print(f"SUMMARY: If all results are green, MeddyNet is Operational.")
+    print("\n--------------------------------------------------")
+    print("SUMMARY: If all results are green, MeddyNet is Operational.")
 
 
 if __name__ == "__main__":

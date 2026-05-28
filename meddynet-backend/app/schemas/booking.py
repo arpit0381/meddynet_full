@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import ConfigDict, BaseModel
 
 from app.models.booking import BookingStatus, BookingType
 
@@ -17,8 +17,7 @@ class BookingTestResponse(BaseModel):
     lab_test_id: uuid.UUID
     price_at_booking: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BookingBase(BaseModel):
@@ -65,5 +64,4 @@ class BookingResponse(BookingBase):
     razorpay_order_id: Optional[str] = None
     amount: Optional[int] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

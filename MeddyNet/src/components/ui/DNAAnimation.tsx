@@ -6,6 +6,21 @@ import { motion } from "framer-motion";
 const DNAAnimation = () => {
   const dots = 18;
   const range = Array.from({ length: dots }, (_, i) => i);
+  const [particles, setParticles] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    setParticles(
+      [...Array(6)].map(() => ({
+        initialX: Math.random() * 400,
+        initialY: Math.random() * 600,
+        y: Math.random() * -100 - 50,
+        duration: 4 + Math.random() * 4,
+        delay: Math.random() * 5,
+        left: `${10 + Math.random() * 80}%`,
+        top: `${20 + Math.random() * 60}%`,
+      }))
+    );
+  }, []);
 
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-linear-to-br from-slate-50 via-white to-blue-50/40">
@@ -182,29 +197,29 @@ const DNAAnimation = () => {
       </motion.div>
 
       {/* Floating particles */}
-      {[...Array(6)].map((_, i) => (
+      {particles.map((p, i) => (
         <motion.div
           key={`particle-${i}`}
           className="absolute w-2 h-2 rounded-full bg-primary/20 blur-[1px]"
           initial={{ 
-            x: Math.random() * 400, 
-            y: Math.random() * 600,
+            x: p.initialX, 
+            y: p.initialY,
             opacity: 0
           }}
           animate={{ 
-            y: [null, Math.random() * -100 - 50],
+            y: [null, p.y],
             opacity: [0, 0.5, 0],
             scale: [0, 1.5, 0]
           }}
           transition={{ 
-            duration: 4 + Math.random() * 4, 
+            duration: p.duration, 
             repeat: Infinity, 
-            delay: Math.random() * 5,
+            delay: p.delay,
             ease: "easeInOut"
           }}
           style={{
-            left: `${10 + Math.random() * 80}%`,
-            top: `${20 + Math.random() * 60}%`,
+            left: p.left,
+            top: p.top,
           }}
         />
       ))}

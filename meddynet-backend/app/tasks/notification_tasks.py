@@ -67,3 +67,15 @@ def send_otp_sms_task(self, phone: str, otp: str):
 @celery_app.task
 def send_booking_confirmation_sms(phone: str, booking_id: str):
     asyncio.run(notification_service.send_booking_confirmation(phone, booking_id))
+
+@celery_app.task(bind=True, max_retries=3)
+def send_email_notification_task(self, to: str, subject: str, html_body: str):
+    """
+    Background job to send an email via Resend with retry logic.
+    """
+    logger.info(f"Delivering email '{subject}' to {to} via Celery...")
+    try:
+        asyncio.run(notification_service.send_email_notification(to, subject, html_body))
+    except Exception as exc:
+        logger.error(f"Email delivery failed for {to}: {exc}")
+        raise self.retry(exc=exc, countdown=2**self.request.retries)

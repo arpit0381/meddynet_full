@@ -19,15 +19,18 @@ class MongoService:
     def client(self):
         if self._client is None:
             logger.info("Initializing lazy MongoDB connection...")
-            self._client = AsyncIOMotorClient(
-                settings.MONGODB_URL,
-                tls=True,
-                tlsCAFile=certifi.where(),
-                tlsAllowInvalidCertificates=True,
-                serverSelectionTimeoutMS=15000,
-                connectTimeoutMS=20000,
-                retryWrites=True,
-            )
+            is_cloud = "mongodb+srv" in settings.MONGODB_URL
+            kwargs = {
+                "serverSelectionTimeoutMS": 15000,
+                "connectTimeoutMS": 20000,
+                "retryWrites": True,
+            }
+            if is_cloud:
+                kwargs["tls"] = True
+                kwargs["tlsCAFile"] = certifi.where()
+                kwargs["tlsAllowInvalidCertificates"] = True
+
+            self._client = AsyncIOMotorClient(settings.MONGODB_URL, **kwargs)
         return self._client
 
     @property

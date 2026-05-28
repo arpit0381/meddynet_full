@@ -32,14 +32,24 @@ async def setup_database():
     import app.models  # Ensure models are imported
     from app.database import Base, engine
 
+    if engine.dialect.name != "sqlite":
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
+        except Exception:
+            pass
+            
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
     yield
 
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+    if engine.dialect.name != "sqlite":
+        try:
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
+        except Exception:
+            pass
 
 
 @pytest.fixture
@@ -69,7 +79,7 @@ def auth_headers():
     from app.services.auth_service import create_access_token
 
     token = create_access_token(
-        {"sub": "12345678-1234-5678-1234-567812345678", "role": "patient", "phone": "+919999999999"}
+        {"sub": "12345678-1234-5678-1234-567812345678", "role": "patient", "email": "patient@example.com"}
     )
     return {"Authorization": f"Bearer {token}"}
 
@@ -80,6 +90,6 @@ def admin_headers():
     from app.services.auth_service import create_access_token
 
     token = create_access_token(
-        {"sub": "87654321-4321-8765-4321-876543210987", "role": "admin", "phone": "+919999999998"}
+        {"sub": "87654321-4321-8765-4321-876543210987", "role": "admin", "email": "admin@example.com"}
     )
     return {"Authorization": f"Bearer {token}"}

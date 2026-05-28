@@ -51,7 +51,7 @@ async def verify():
     log("\n[Phase 4] Redis Check...")
     try:
         await redis_client.ping()
-        log(f"  [OK] REDIS: Healthy")
+        log("  [OK] REDIS: Healthy")
     except Exception as e:
         log(f"  [FAIL] REDIS: {e}")
 

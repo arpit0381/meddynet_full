@@ -66,9 +66,10 @@ export default function LabLoginPage() {
         router.push("/dashboard");
       }, 1000);
     } catch (error: unknown) {
-      const axiosErr = error as { response?: { data?: { detail?: string } } };
-      const errorMsg = axiosErr.response?.data?.detail || "Invalid credentials or server error";
-      setToast({ message: errorMsg, type: "error" });
+      const axiosErr = error as { response?: { data?: { detail?: string | any[] } } };
+      const detail = axiosErr.response?.data?.detail;
+      const errorMsg = Array.isArray(detail) ? detail[0]?.msg : detail;
+      setToast({ message: typeof errorMsg === 'string' ? errorMsg : "Invalid credentials or server error", type: "error" });
     } finally {
       setIsLoading(false);
     }

@@ -68,22 +68,22 @@ def verify_refresh_token(token: str):
     return decode_token(token)
 
 
-async def send_otp(phone: str):
+async def send_otp(email: str):
     otp = str(random.randint(100000, 999999))
     # Store OTP in redis for 5 minutes
-    await redis_client.setex(f"otp:{phone}", 300, otp)
+    await redis_client.setex(f"otp:{email}", 300, otp)
     # Only log OTP in development for debugging
     if settings.ENVIRONMENT == "development":
-        logger.info(f"[DEV] 2FA OTP for {phone}: {otp}")
+        logger.info(f"[DEV] 2FA OTP for {email}: {otp}")
     return otp
 
 
-async def verify_otp(phone: str, otp: str):
-    stored_otp = await redis_client.get(f"otp:{phone}")
+async def verify_otp(email: str, otp: str):
+    stored_otp = await redis_client.get(f"otp:{email}")
     if not stored_otp or stored_otp != otp:
         raise Exception("Invalid or expired OTP")
     # Clean up after successful verification
-    await redis_client.delete(f"otp:{phone}")
+    await redis_client.delete(f"otp:{email}")
     return True
 
 

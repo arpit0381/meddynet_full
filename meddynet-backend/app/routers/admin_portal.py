@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -69,15 +69,16 @@ async def get_admin_stats(current_user: dict = Depends(check_admin), db: AsyncSe
 
     # 6. Real Trend Data (Last 30 Days)
     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    date_expr = func.date_trunc("day", Booking.created_at)
     trend_query = (
         select(
-            func.date_trunc("day", Booking.created_at).label("date"),
+            date_expr.label("date"),
             func.count(Booking.id).label("bookings"),
             func.sum(Booking.total_amount).label("revenue"),
         )
         .filter(Booking.created_at >= thirty_days_ago)
-        .group_by(func.date_trunc("day", Booking.created_at))
-        .order_by("date")
+        .group_by(date_expr)
+        .order_by(text("date"))
     )
 
     trend_res = await db.execute(trend_query)
@@ -170,8 +171,9 @@ async def list_labs(
     """
     Lists all labs for management.
     """
+    from sqlalchemy.orm import selectinload
     result = await db.execute(
-        select(Lab).order_by(Lab.is_verified.asc(), Lab.created_at.desc()).offset(skip).limit(limit)
+        select(Lab).options(selectinload(Lab.tests)).order_by(Lab.is_verified.asc(), Lab.created_at.desc()).offset(skip).limit(limit)
     )
     return result.scalars().all()
 
@@ -498,24 +500,45 @@ async def process_payouts(current_user: dict = Depends(check_admin), db: AsyncSe
 
 
 @router.get("/reports-audit")
-async def get_all_reports(current_user: dict = Depends(check_admin), db: AsyncSession = Depends(get_db)):
+async def get_all_reports(
+    skip: int = 0,
+    limit: int = Query(default=50, le=200),
+    current_user: dict = Depends(check_admin),
+    db: AsyncSession = Depends(get_db),
+):
     """
-    Lists all diagnostic reports across the platform.
+    Lists all diagnostic reports across the platform with real data.
+    Joined with Booking (patient name) and Lab (lab name).
     """
-    result = await db.execute(select(Booking).filter(Booking.status == BookingStatus.completed).limit(50))
-    bookings = result.scalars().all()
+    from app.models.report import Report
+
+    query = (
+        select(Report, Booking.patient_name, Lab.name.label("lab_name"))
+        .join(Booking, Report.booking_id == Booking.id)
+        .join(Lab, Report.lab_id == Lab.id)
+        .order_by(Report.uploaded_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(query)
 
     reports = []
-    for b in bookings:
+    for row in result.all():
+        r, patient_name, lab_name = row
+        size_kb = round(r.file_size_bytes / 1024, 1) if r.file_size_bytes else 0
+        size_str = f"{size_kb} KB" if size_kb < 1024 else f"{round(size_kb / 1024, 1)} MB"
         reports.append(
             {
-                "id": f"RPT-{str(b.id)[:8]}",
-                "patient": b.patient_name,
-                "lab": "Partner Lab",
-                "test": "Diagnostic Panel",
-                "date": b.created_at.strftime("%d %b %Y"),
-                "size": "1.5 MB",
-                "status": "Clean",
+                "id": f"RPT-{str(r.id)[:8]}",
+                "report_id": str(r.id),
+                "booking_id": str(r.booking_id),
+                "patient": patient_name or "Unknown",
+                "lab": lab_name,
+                "date": r.uploaded_at.strftime("%d %b %Y"),
+                "size": size_str,
+                "status": "Flagged" if r.is_abnormal else "Clean",
+                "cloud_url": r.cloud_url,
+                "notified_at": r.notified_at.isoformat() if r.notified_at else None,
             }
         )
     return reports

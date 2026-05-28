@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.middleware.rbac import require_role
@@ -68,11 +69,34 @@ async def get_tech_stats(
 
     success_rate = 100.0 if assigned_count == 0 else (completed_count / assigned_count) * 100
 
+    # 4. Queue Time — real computation based on active jobs ahead in the queue
+    # Count bookings that are confirmed/assigned (not yet completed/cancelled)
+    # for this technician's lab that are scheduled before or at now.
+    # Estimate: avg 25 min per job.
+    AVG_MINS_PER_JOB = 25
+
+    # Fetch technician's lab_id for queue computation
+    tech_lab_res = await db.execute(select(Technician).filter(Technician.id == tech_id))
+    technician_obj = tech_lab_res.scalar_one_or_none()
+
+    queue_count = 0
+    if technician_obj and technician_obj.lab_id:
+        from app.models.booking import BookingStatus as BS
+        queue_res = await db.execute(
+            select(func.count(Booking.id)).filter(
+                Booking.lab_id == technician_obj.lab_id,
+                Booking.status.in_([BS.confirmed, BS.assigned, BS.on_the_way, BS.arrived]),
+            )
+        )
+        queue_count = queue_res.scalar() or 0
+
+    queue_time_mins = queue_count * AVG_MINS_PER_JOB
+
     return {
         "today_earnings": float(today_earnings) / 100,
         "total_earnings": float(total_earnings) / 100,
         "success_rate": round(success_rate, 1),
-        "queue_time_mins": 12,  # Still simulated based on fleet avg
+        "queue_time_mins": queue_time_mins,
         "total_jobs": assigned_count,
     }
 
@@ -105,6 +129,7 @@ async def get_my_jobs(
                 ]
             ),
         )
+        .options(selectinload(Booking.tests))
         .order_by(Booking.scheduled_at.asc())
     )
 
@@ -123,6 +148,7 @@ async def get_available_jobs(
     query = (
         select(Booking)
         .filter(Booking.status == BookingStatus.confirmed, Booking.technician_id is None)
+        .options(selectinload(Booking.tests))
         .order_by(Booking.scheduled_at.asc())
     )
 

@@ -10,9 +10,9 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    phone = Column(String(15), unique=True, nullable=False, index=True)
+    email = Column(String(100), unique=True, nullable=False, index=True)
+    phone = Column(String(15), unique=True, nullable=True, index=True)
     name = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, nullable=True)
     blood_group = Column(String(5), nullable=True)
     dob = Column(Date, nullable=True)
     gender = Column(String(10), nullable=True)
@@ -29,7 +29,7 @@ class User(Base):
 
     # Context IDs
     lab_id = Column(Uuid(as_uuid=True), ForeignKey("labs.id"), nullable=True)
-    technician_id = Column(Uuid(as_uuid=True), ForeignKey("technicians.id"), nullable=True)
+    technician_id = Column(Uuid(as_uuid=True), ForeignKey("technicians.id", use_alter=True, name="fk_user_technician_id"), nullable=True)
 
     # Financials
     wallet_balance = Column(Integer, default=0, nullable=False)  # Balance in paise

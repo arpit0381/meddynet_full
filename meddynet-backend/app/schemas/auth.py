@@ -7,11 +7,11 @@ from .user import UserResponse
 
 
 class SendOTPRequest(BaseModel):
-    phone: str
+    email: str
 
 
 class VerifyOTPRequest(BaseModel):
-    phone: str
+    email: str
     otp: str
 
 

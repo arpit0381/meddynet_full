@@ -5,6 +5,8 @@ import { DataTable, Column } from "@/components/admin/ui/DataTable";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { Modal } from "@/components/admin/ui/Modal";
 
+import { useAdminSubscriptions, useAdminLabs } from "@/lib/hooks";
+
 interface Sub {
   id: string;
   lab: string;
@@ -15,41 +17,50 @@ interface Sub {
   revenue: string;
 }
 
-const mockSubs: Sub[] = Array.from({ length: 15 }).map((_, i) => ({
-  id: `SUB-${100 + i}`,
-  lab: `Apex Diagnostics ${i}`,
-  plan: ["Starter", "Basic", "Advanced", "Premium"][i % 4],
-  billing: "Monthly",
-  renewal: "15 Apr 2026",
-  status: i % 5 === 0 ? "Expired" : "Active",
-  revenue: `₹${(5 + i).toFixed(1)}k / mo`,
-}));
-
 interface PlanConfig {
+  id: string;
   name: string;
   price: string;
   comm: string;
 }
 
+import { useUpdateSubscription } from "@/lib/hooks";
+import { toast } from "sonner";
+
 export default function SubscriptionsPage() {
-  const [subs, setSubs] = useState<Sub[]>(mockSubs);
-  const [plans, setPlans] = useState<PlanConfig[]>([
-    {name: 'Starter', price: 'Free', comm: '15%'},
-    {name: 'Basic', price: '₹999/mo', comm: '12%'},
-    {name: 'Advanced', price: '₹2499/mo', comm: '10%'},
-    {name: 'Premium', price: '₹4999/mo', comm: '8%'}
-  ]);
+  const { data: rawPlans = [], isLoading: loadingPlans } = useAdminSubscriptions();
+  const { data: rawLabs = [], isLoading: loadingLabs } = useAdminLabs();
+
+  const subs: Sub[] = (rawLabs || []).map((lab: Record<string, unknown>) => ({
+    id: lab.id as string,
+    lab: lab.name as string,
+    plan: lab.plan as string,
+    billing: "Monthly",
+    renewal: "TBD",
+    status: lab.is_active ? "Active" : "Expired",
+    revenue: "₹0 / mo",
+  }));
+
+  const plans: PlanConfig[] = (rawPlans || []).map((plan: Record<string, unknown>) => ({
+    id: plan.id as string,
+    name: plan.name as string,
+    price: `₹${plan.price_inr as number}/mo`,
+    comm: `${Math.round((plan.commission_rate as number) * 100)}%`,
+  }));
+
+  const updateMutation = useUpdateSubscription();
+
   const [planModal, setPlanModal] = useState<{isOpen: boolean, config: PlanConfig | null}>({isOpen: false, config: null});
   const [subModal, setSubModal] = useState<{isOpen: boolean, sub: Sub | null}>({isOpen: false, sub: null});
 
   const columns: Column<Sub>[] = [
     { header: "Lab Name", accessor: (s) => <span className="font-bold text-main-text uppercase tracking-tight">{s.lab}</span> },
-    { header: "Plan", accessor: (s) => <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border ${s.plan === 'Premium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]' : 'bg-primary/10 text-primary border-primary/20'}`}>{s.plan}</span> },
+    { header: "Plan", accessor: (s) => <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg border ${s.plan?.toLowerCase() === 'premium' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.1)]' : 'bg-primary/10 text-primary border-primary/20'}`}>{s.plan}</span> },
     { header: "Billing", accessor: (s) => <span className="font-medium text-muted/80">{s.billing}</span> },
     { header: "Renewal", accessor: (s) => <span className="font-mono text-[11px] text-main-text/70">{s.renewal}</span> },
     { header: "Status", accessor: (s) => <StatusBadge status={s.status === 'Active' ? 'success' : 'error'} label={s.status}/> },
     { header: "Revenue", accessor: (s) => <span className="font-black text-main-text">{s.revenue}</span> },
-    { header: "Actions", accessor: (s) => <button onClick={() => setSubModal({isOpen: true, sub: s})} className="flex items-center gap-2 text-primary hover:text-primary/80 text-[10px] font-black uppercase tracking-widest transition-all hover:translate-y-[-1px] group">
+    { header: "Actions", accessor: (s) => <button onClick={() => setSubModal({isOpen: true, sub: s})} className="flex items-center gap-2 text-primary hover:text-primary/80 text-[10px] font-black uppercase tracking-widest transition-all hover:-translate-y-px group">
       <Zap size={14} className="group-hover:fill-current transition-all"/> Change Plan
     </button> }
   ];
@@ -82,7 +93,7 @@ export default function SubscriptionsPage() {
               <p className="text-[10px] font-black uppercase tracking-widest text-muted mt-1 opacity-60">Active monitoring of partner diagnostics network</p>
             </div>
          </div>
-         <DataTable data={subs} columns={columns} searchable />
+         {loadingLabs ? <div className="text-center p-10 text-muted">Loading labs...</div> : <DataTable data={subs} columns={columns} searchable />}
       </div>
 
       <Modal isOpen={planModal.isOpen} onClose={() => setPlanModal({isOpen: false, config: null})} title="Tier Protocol Configuration" footer={
@@ -90,9 +101,25 @@ export default function SubscriptionsPage() {
           <button onClick={() => setPlanModal({isOpen: false, config: null})} className="px-6 py-3 border border-border-dim rounded-xl text-[10px] font-black uppercase tracking-widest text-muted hover:text-main-text transition-all">Cancel</button>
           <button onClick={() => {
             if (planModal.config) {
-                setPlans(plans.map(p => p.name === planModal.config!.name ? planModal.config! : p));
+                // We only support updating commission rate or price in this basic UI.
+                // Assuming price string like "₹999/mo" - let's extract digits.
+                const priceMatch = planModal.config.price.match(/\d+/);
+                const commMatch = planModal.config.comm.match(/\d+/);
+                
+                const payload: any = {};
+                if (priceMatch) payload.price_paise = parseInt(priceMatch[0], 10) * 100;
+                if (commMatch) payload.commission_rate = parseInt(commMatch[0], 10) / 100;
+
+                updateMutation.mutate({ planId: planModal.config.id, payload }, {
+                  onSuccess: () => {
+                    toast.success("Plan updated successfully");
+                    setPlanModal({isOpen: false, config: null});
+                  },
+                  onError: () => toast.error("Failed to update plan")
+                });
+            } else {
+              setPlanModal({isOpen: false, config: null});
             }
-            setPlanModal({isOpen: false, config: null});
           }} className="px-8 py-3 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg active:scale-95">Commit Tier Changes</button>
         </div>
       }>
@@ -110,7 +137,7 @@ export default function SubscriptionsPage() {
           <button onClick={() => setSubModal({isOpen: false, sub: null})} className="px-6 py-3 border border-border-dim rounded-xl text-[10px] font-black uppercase tracking-widest text-muted hover:text-main-text transition-all">Cancel</button>
           <button onClick={() => {
             if (subModal.sub) {
-               setSubs(subs.map(s => s.id === subModal.sub?.id ? subModal.sub : s));
+               toast.success(`Migrated subscription for ${subModal.sub.lab}`);
             }
             setSubModal({isOpen: false, sub: null});
           }} className="px-8 py-3 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg active:scale-95">Migrate Entity</button>

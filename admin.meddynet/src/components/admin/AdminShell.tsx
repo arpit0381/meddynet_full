@@ -50,26 +50,17 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isInitializing, setIsInitializing] = useState(true);
   const { isAuthenticated, _hasHydrated } = useAdminStore();
 
   useEffect(() => {
     if (!_hasHydrated) return;
 
-    // Avoid redirecting when already at login
-    if (pathname === "/admin/login") {
-      setIsInitializing(false);
-      return;
-    }
-
-    if (!isAuthenticated) {
+    if (!isAuthenticated && pathname !== "/admin/login") {
       router.replace("/admin/login");
-    } else {
-      setIsInitializing(false);
     }
   }, [pathname, router, isAuthenticated, _hasHydrated]);
 
-  if (isInitializing) {
+  if (!_hasHydrated || (!isAuthenticated && pathname !== "/admin/login")) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-surface">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary"></div>
