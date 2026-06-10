@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { Map, Plus, Edit2, Trash2, Users, FlaskConical, Calendar, Activity } from "lucide-react";
 import { useAdminCities } from "@/lib/hooks";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface City {
   id: string;
@@ -61,15 +62,15 @@ export default function CitiesPage() {
 
   const handleSave = () => {
     if (modal.type === "create") {
-      setCities([{ ...form, id: `CTY-${++idCounter.current}`, totalLabs: 0, totalUsers: 0, bookingsMTD: 0 }, ...cities]);
+      toast.info("City creation via API pending integration.");
     } else if (modal.city) {
-      setCities(cities.map(c => c.id === modal.city!.id ? { ...c, ...form } : c));
+      toast.info("City edit via API pending integration.");
     }
     setModal({ isOpen: false, type: "create", city: null });
   };
 
   const toggleStatus = (id: string) => {
-    setCities(cities.map(c => c.id === id ? { ...c, status: c.status === "Active" ? "Inactive" : "Active" } : c));
+    toast.info("Status toggle via API pending integration.");
   };
 
   const columns: Column<City>[] = [
@@ -149,7 +150,7 @@ export default function CitiesPage() {
         </div>
       </Modal>
 
-      <ConfirmDialog isOpen={deleteDialog.isOpen} onClose={() => setDeleteDialog({ isOpen: false, id: null })} title="Remove City" description="Are you sure? This will remove the city from the platform. All associated data will be preserved." confirmText="Remove" isDestructive onConfirm={() => { setCities(cities.filter(c => c.id !== deleteDialog.id)); setDeleteDialog({ isOpen: false, id: null }); }} />
+      <ConfirmDialog isOpen={deleteDialog.isOpen} onClose={() => setDeleteDialog({ isOpen: false, id: null })} title="Remove City" description="Are you sure? This will remove the city from the platform. All associated data will be preserved." confirmText="Remove" isDestructive onConfirm={() => { toast.info("City deletion via API pending."); setDeleteDialog({ isOpen: false, id: null }); }} />
     </div>
   );
 }

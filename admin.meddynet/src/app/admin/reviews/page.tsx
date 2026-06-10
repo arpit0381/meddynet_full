@@ -9,6 +9,7 @@ import { PermissionGate } from "@/components/admin/ui/PermissionGate";
 import { useAdminReviews } from "@/lib/hooks";
 import { useEffect } from "react";
 import { Star, Flag, Eye, Trash2, MessageSquare, TrendingUp, AlertCircle, CheckCircle2, X } from "lucide-react";
+import { toast } from "sonner";
 
 function StarDisplay({ rating }: { rating: number }) {
   return (
@@ -64,12 +65,12 @@ export default function ReviewsPage() {
   const todayCount = reviews.filter(r => r.date.startsWith("2026-03-23")).length;
 
   const updateStatus = (id: string, status: Review["status"]) => {
-    setReviews(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+    toast.info("Status update pending API integration.");
     setPreviewModal(null);
   };
 
   const bulkAction = (action: "Published" | "Removed") => {
-    setReviews(prev => prev.map(r => selected.has(r.id) ? { ...r, status: action } : r));
+    toast.info("Bulk action pending API integration.");
     setSelected(new Set());
   };
 
@@ -204,7 +205,7 @@ export default function ReviewsPage() {
         )}
       </Modal>
 
-      <ConfirmDialog isOpen={deleteDialog.isOpen} onClose={() => setDeleteDialog({ isOpen: false, id: null })} title="Remove Review" description={`Are you sure you want to remove this review? This will trigger a rating recalculation for the lab.`} confirmText="Remove" isDestructive onConfirm={() => { setReviews(reviews.filter(r => r.id !== deleteDialog.id)); setDeleteDialog({ isOpen: false, id: null }); }} />
+      <ConfirmDialog isOpen={deleteDialog.isOpen} onClose={() => setDeleteDialog({ isOpen: false, id: null })} title="Remove Review" description={`Are you sure you want to remove this review? This will trigger a rating recalculation for the lab.`} confirmText="Remove" isDestructive onConfirm={() => { toast.info("Review deletion pending API integration."); setDeleteDialog({ isOpen: false, id: null }); }} />
     </div>
   );
 }

@@ -6,9 +6,26 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { StatCard } from "@/components/admin/ui/StatCard";
-import { SupportTicket } from "@/data/support";
 import { useSupportTickets, useRespondToTicket } from "@/lib/hooks";
 import { toast } from "sonner";
+
+export interface SupportTicket {
+  id: string;
+  user: string;
+  userType: "Patient" | "Lab" | "Technician";
+  subject: string;
+  status: "Open" | "In Progress" | "Resolved";
+  priority: "High" | "Medium" | "Low";
+  channel: "In-App" | "Email" | "Chat";
+  createdAt: string;
+  updatedAt: string;
+  assignedTo?: string;
+  messages: {
+    sender: "user" | "admin";
+    text: string;
+    time: string;
+  }[];
+}
 
 const QUICK_TEMPLATES = [
   "We're looking into this issue and will get back to you within 24 hours.",

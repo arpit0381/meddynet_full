@@ -6,8 +6,29 @@ import { Modal } from "@/components/admin/ui/Modal";
 import { StatusBadge } from "@/components/admin/ui/StatusBadge";
 import { ConfirmDialog } from "@/components/admin/ui/ConfirmDialog";
 import { PermissionGate } from "@/components/admin/ui/PermissionGate";
-import { mockRefunds, Refund } from "@/data/financials";
 import { RotateCcw, Eye, CheckCircle2, XCircle, Clock, DollarSign } from "lucide-react";
+
+export interface Refund {
+  id: string;
+  bookingId: string;
+  patientName: string;
+  labName: string;
+  amount: number;
+  reason: string;
+  paymentMethod: "UPI" | "Card" | "NetBanking" | "Wallet";
+  status: "Pending" | "Approved" | "Rejected" | "Partial";
+  requestedAt: string;
+  resolvedAt: string | null;
+  adminNotes: string;
+  partialAmount: number | null;
+}
+
+const mockRefunds: Refund[] = [
+  { id: "RFD-001", bookingId: "BKG-20003", patientName: "Arun Patel", labName: "MediScan Labs", amount: 1200, reason: "Technician did not arrive for home collection.", paymentMethod: "UPI", status: "Pending", requestedAt: "2026-03-22T10:00:00Z", resolvedAt: null, adminNotes: "", partialAmount: null },
+  { id: "RFD-002", bookingId: "BKG-20010", patientName: "Sunita Devi", labName: "CityLab Diagnostics", amount: 850, reason: "Wrong test results uploaded, Lab error confirmed.", paymentMethod: "Card", status: "Approved", requestedAt: "2026-03-20T14:00:00Z", resolvedAt: "2026-03-21T10:30:00Z", adminNotes: "Lab confirmed error. Full refund approved.", partialAmount: null },
+  { id: "RFD-003", bookingId: "BKG-20025", patientName: "Deepak Verma", labName: "QuickTest Diagnostics", amount: 650, reason: "Service not provided — booking expired without collection.", paymentMethod: "NetBanking", status: "Pending", requestedAt: "2026-03-21T09:00:00Z", resolvedAt: null, adminNotes: "", partialAmount: null },
+  { id: "RFD-004", bookingId: "BKG-20040", patientName: "Kavita Singh", labName: "Apex Diagnostics", amount: 2100, reason: "Cancelled booking 48 hours in advance.", paymentMethod: "UPI", status: "Approved", requestedAt: "2026-03-18T12:00:00Z", resolvedAt: "2026-03-19T09:00:00Z", adminNotes: "Cancellation policy satisfied. Full refund.", partialAmount: null },
+];
 
 export default function RefundsPage() {
   const [refunds, setRefunds] = useState<Refund[]>(mockRefunds);

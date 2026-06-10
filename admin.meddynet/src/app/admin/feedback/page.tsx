@@ -1,12 +1,25 @@
 "use client";
 import { useState, useMemo } from "react";
 import { ThumbsUp, Minus, ThumbsDown, TrendingUp, Download } from "lucide-react";
-import { mockReviews } from "@/data/reviews";
+import { useAdminReviews } from "@/lib/hooks";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 const KEYWORDS = ["fast", "accurate", "professional", "clean", "late", "wrong", "excellent", "helpful", "recommend", "error", "delay", "good", "bad", "outstanding", "poor", "rude", "friendly", "detailed", "quick", "slow"];
 
-function extractKeywords(reviews: typeof mockReviews) {
+export interface Review {
+  id: string;
+  patientName: string;
+  labName: string;
+  testName: string;
+  npsScore: number;
+  text: string;
+  date: string;
+  status: string;
+  sentiment: string;
+  rating?: number;
+}
+
+function extractKeywords(reviews: Review[]) {
   const freq: Record<string, number> = {};
   reviews.forEach(r => {
     KEYWORDS.forEach(kw => {
@@ -42,7 +55,20 @@ function NpsGauge({ score }: { score: number }) {
 }
 
 export default function FeedbackPage() {
-  const reviews = mockReviews;
+  const { data: rawReviews = [] } = useAdminReviews();
+  const reviews: Review[] = useMemo(() => {
+    return rawReviews.map((r: any) => ({
+      ...r,
+      patientName: r.patientName || "Unknown",
+      testName: "N/A",
+      npsScore: Math.round((r.rating / 5) * 10),
+      text: r.comment || "",
+      date: r.created_at,
+      status: "Published",
+      sentiment: r.rating >= 4 ? "Positive" : r.rating <= 2 ? "Negative" : "Neutral"
+    }));
+  }, [rawReviews]);
+
   const [filterKw, setFilterKw] = useState<string | null>(null);
   const [filterSentiment, setFilterSentiment] = useState("All");
 
